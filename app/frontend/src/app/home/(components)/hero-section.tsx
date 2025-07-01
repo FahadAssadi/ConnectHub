@@ -61,7 +61,7 @@ export function HeroSection() {
           {/* Secondary CTA */}
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button asChild variant="ghost" className="flex items-center gap-2">
-              <a href="/onboarding">
+              <a href="/home/onboarding">
               <Play className="h-4 w-4" />
               Learn How It Works
               </a>
