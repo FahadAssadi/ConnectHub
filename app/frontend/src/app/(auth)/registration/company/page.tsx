@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { RegistrationHeader } from "./registration-header"
-import { CompanyDetailsStep } from "./company-steps/company-details-step"
-import { PrimaryContactStep } from "./company-steps/primary-contact-step"
-import { CompanyOverviewStep } from "./company-steps/company-overview-step"
-import { BusinessRegistrationStep } from "./company-steps/business-registration-step"
+import { RegistrationHeader } from "../(components)/registration-header"
+import { CompanyDetailsStep } from "./(components)/company-details-step"
+import { PrimaryContactStep } from "./(components)/primary-contact-step"
+import { CompanyOverviewStep } from "./(components)/company-overview-step"
+import { BusinessRegistrationStep } from "./(components)/business-registration-step"
 
-export function CompanyRegistrationFlow() {
+export default function CompanyRegistrationFlow() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({})
 
