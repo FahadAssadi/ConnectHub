@@ -4,7 +4,7 @@ import { auth } from "../lib/auth";
 
 // Import route modules
 import registrationRoutes from "./registration/registration";
-import productsRoutes from "./products";
+import productsRoutes from "./product/products";
 
 const app = new Hono();
 

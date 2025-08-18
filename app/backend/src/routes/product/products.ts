@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { eq, and } from "drizzle-orm";
-import { db } from "../db";
-import { product, bdPartnerApplication } from "../db/schema";
-import { withAuth, requireBdPartnerApplicationAccess } from "../lib/registration/middleware";
+import { db } from "../../db";
+import { product, bdPartnerApplication } from "../../db/schema";
+import { withAuth, requireBdPartnerApplicationAccess } from "../../lib/registration/middleware";
 
 const app = new Hono();
 
