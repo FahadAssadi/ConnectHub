@@ -3,6 +3,9 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 
 import { auth } from './lib/auth'
+import registrationRouter from './routes/registration/registration'
+import marketplaceRouter from './routes/marketplace/marketplace'
+import eoiRouter from './routes/eoi/eoi'
 
 const app = new Hono()
 
@@ -17,6 +20,15 @@ app.use('*', cors({
 app.on(['POST', 'GET'], '/api/auth/**', (c) => {
   return auth.handler(c.req.raw)
 })
+
+// Registration routes
+app.route('/api/registration', registrationRouter)
+
+// Marketplace routes
+app.route('/api/marketplace', marketplaceRouter)
+
+// EOI routes
+app.route('/api/eoi', eoiRouter)
 
 
 // Health check
@@ -44,4 +56,8 @@ app.onError((err, c) => {
   }, 500)
 })
 
-export default app
+// Bun server configuration
+export default {
+  port: process.env.PORT || 5000,
+  fetch: app.fetch,
+}
