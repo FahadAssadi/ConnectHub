@@ -1,25 +1,47 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors';
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
 
-import apiRoutes from "./routes/api";
+import { auth } from './lib/auth'
 
 const app = new Hono()
 
-app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5000"],
-  allowHeaders: ["Content-Type", "Authorization"],
-  allowMethods: ["POST", "GET", "OPTIONS"],
-  exposeHeaders: ["Content-Length"],
-  maxAge: 600,
-  credentials: true,
-}));
+// Middleware
+app.use('*', logger())
+app.use('*', cors({
+  origin: ['http://localhost:3000', 'http://localhost:3001'], // Add your frontend URLs
+  credentials: true
+}))
 
-app.get('/', (c) => c.text('ConnectHub API Server'))
+// Auth routes
+app.on(['POST', 'GET'], '/api/auth/**', (c) => {
+  return auth.handler(c.req.raw)
+})
 
-// Mount API routes
-app.route('/api', apiRoutes);
 
-export default {
-  port: process.env.PORT || 5000,
-  fetch: app.fetch,
-}
+// Health check
+app.get('/', (c) => {
+  return c.json({ 
+    message: 'ConnectHub API is running!',
+    timestamp: new Date().toISOString()
+  })
+})
+
+// 404 handler
+app.notFound((c) => {
+  return c.json({ 
+    error: 'Route not found',
+    path: c.req.path 
+  }, 404)
+})
+
+// Error handler
+app.onError((err, c) => {
+  console.error('Server error:', err)
+  return c.json({ 
+    error: 'Internal server error',
+    message: err.message 
+  }, 500)
+})
+
+export default app
