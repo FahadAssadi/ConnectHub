@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react"
 
 export const authClient = createAuthClient({
-    baseURL: process.env.API_URL
+    baseURL: "http://localhost:5000"
 })
 
 export const signInGoogle = async () => {
@@ -16,11 +16,6 @@ export const signInGoogle = async () => {
      * A URL to redirect if the user is newly registered
      */
     newUserCallbackURL: "/welcome",
-    /**
-     * disable the automatic redirect to the provider. 
-     * @default false
-     */
-    disableRedirect: true,
   });
 
   console.log(data);
