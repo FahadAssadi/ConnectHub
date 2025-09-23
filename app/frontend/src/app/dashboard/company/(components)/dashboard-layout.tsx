@@ -64,7 +64,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <ul role="list" className="-mx-2 space-y-1">
                   <li>
                     <Link
-                      href="/products/add"
+                      href="/dashboard/company/products/add"
                       className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex gap-x-3 rounded-md p-2 text-sm leading-6"
                     >
                       <Plus className="h-4 w-4 shrink-0" />
@@ -136,7 +136,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <ul role="list" className="-mx-2 space-y-1">
                     <li>
                       <Link
-                        href="/products/add"
+                        href="/dashboard/company/products/add"
                         onClick={() => setMobileMenuOpen(false)}
                         className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex gap-x-3 rounded-md p-2 text-sm leading-6"
                       >

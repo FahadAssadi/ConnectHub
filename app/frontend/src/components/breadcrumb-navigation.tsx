@@ -18,7 +18,6 @@ const routeLabels: Record<string, string> = {
   "/dashboard/bd-partner/profile": "Profile",
   "/dashboard/bd-partner/partners": "Partners",
 
-  "/dashboard/company": "Company",
   "/dashboard/company/profile": "Profile",
   "/dashboard/company/products": "Products",
   "/dashboard/company/products/[productId]": "Product Details",
@@ -28,10 +27,12 @@ const routeLabels: Record<string, string> = {
 
 const getRouteSegments = (pathname: string) => {
   const segments = pathname.split("/").filter(Boolean)
-  const breadcrumbs = [{ label: "Home", href: "/" }]
+  const breadcrumbs = [{ label: "Home", href: "/dashboard" }]
 
   let currentPath = ""
-  segments.forEach((segment, index) => {
+  const updatedSegments = segments.slice(2)
+
+  updatedSegments.forEach((segment) => {
     currentPath += `/${segment}`
 
     // Use routeLabels if available, otherwise fallback to capitalized segment

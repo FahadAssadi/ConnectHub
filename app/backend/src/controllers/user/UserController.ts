@@ -40,7 +40,7 @@ export class UserController {
 
     try {
         const [newProfile] = await db.insert(userProfiles).values({
-            id: nanoid(),
+            id: userId,
             userId: userId,
             userType: userRole,
             registrationStage: 'initial',
@@ -52,7 +52,7 @@ export class UserController {
             const { companyName } = userData;
 
             await db.insert(companies).values({
-                id: nanoid(),
+                id: userId,
                 profileId: profileId,
                 companyName: companyName,
             });
@@ -60,7 +60,7 @@ export class UserController {
             const { profileType } = userData;
 
             const [bdPartner] = await db.insert(bdPartners).values({
-                id: nanoid(),
+                id: userId,
                 profileId: profileId,
                 profileType: profileType,
             }).returning({ id: bdPartners.id });
@@ -71,7 +71,7 @@ export class UserController {
                 const { fullName } = userData;
 
                 await db.insert(individualBdPartners).values({
-                    id: nanoid(),
+                    id: userId,
                     bdPartnerId: bdPartnerId,
                     fullName: fullName
                 });
@@ -79,7 +79,7 @@ export class UserController {
                 const { companyName } = userData;
 
                 await db.insert(companyBdPartners).values({
-                    id: nanoid(),
+                    id: userId,
                     bdPartnerId: bdPartnerId,
                     companyName: companyName
                 });

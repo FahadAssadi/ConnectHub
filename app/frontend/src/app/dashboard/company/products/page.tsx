@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,80 +9,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Plus, Search, Grid, List, MoreHorizontal, Edit, Eye, Trash2, Users, DollarSign, Package } from "lucide-react"
+import { Plus, Search, Grid, List, MoreHorizontal, Edit, Eye, Trash2, Users, DollarSign, Package, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { getSession } from "@/lib/auth-client"
 
-// Mock data for products
-const mockProducts = [
-  {
-    id: "1",
-    name: "Cloud Analytics Platform",
-    type: "Software",
-    industry: "Technology",
-    status: "published",
-    interestedPartners: 12,
-    description: "Advanced analytics platform for enterprise data processing",
-    targetMarket: "Enterprise",
-    commission: "15%",
-    image: "/analytics-dashboard.png",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "AI Marketing Suite",
-    type: "SaaS",
-    industry: "Marketing",
-    status: "draft",
-    interestedPartners: 8,
-    description: "AI-powered marketing automation and customer insights",
-    targetMarket: "SMB",
-    commission: "20%",
-    image: "/ai-marketing-interface.jpg",
-    createdAt: "2024-01-20",
-  },
-  {
-    id: "3",
-    name: "Cybersecurity Framework",
-    type: "Service",
-    industry: "Security",
-    status: "published",
-    interestedPartners: 15,
-    description: "Comprehensive cybersecurity assessment and implementation",
-    targetMarket: "Enterprise",
-    commission: "25%",
-    image: "/cybersecurity-dashboard.png",
-    createdAt: "2024-01-10",
-  },
-  {
-    id: "4",
-    name: "Digital Transformation Consulting",
-    type: "Service",
-    industry: "Consulting",
-    status: "published",
-    interestedPartners: 6,
-    description: "End-to-end digital transformation strategy and implementation",
-    targetMarket: "Enterprise",
-    commission: "30%",
-    image: "/digital-transformation-concept.png",
-    createdAt: "2024-01-05",
-  },
-]
+export default function ProductCatalog() {
+    const [viewMode, setViewMode] = useState<"grid" | "table">("grid")
+    const [searchQuery, setSearchQuery] = useState("")
+    const [statusFilter, setStatusFilter] = useState("all")
+    const [typeFilter, setTypeFilter] = useState("all")
+    const [products, setProducts] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
-export function ProductCatalog() {
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("all")
+    useEffect(() => {
+        // Fetch products from API
+        const fetchProducts = async () => {
+            setLoading(true)
+            setError(null)
+            
+            try {
+                const { data } = await getSession();
+                const userId = data?.session?.userId;
 
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter
-    const matchesType = typeFilter === "all" || product.type === typeFilter
+                if (!userId) {
+                    throw new Error('User not authenticated')
+                }
 
-    return matchesSearch && matchesStatus && matchesType
-  })
+                console.log(data)
+
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/protected/products/company/${userId}`, 
+                    { credentials: 'include',}
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.products) {
+                    setProducts(result.products)
+                } else {
+                    console.error('Failed to fetch products:', result.error)
+                    setError(result.error || 'Failed to fetch products')
+                    setProducts([])
+                }
+
+                console.log("Fetched products:", result)
+            } catch (error) {
+                console.error('Error fetching products:', error)
+                setError(error instanceof Error ? error.message : 'An error occurred')
+                setProducts([])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchProducts()
+    }, [])
 
   return (
     <div className="space-y-6">
@@ -92,7 +78,7 @@ export function ProductCatalog() {
           <h1 className="text-3xl font-bold text-balance">Product Management</h1>
           <p className="text-muted-foreground text-pretty">Manage your products and services for BD partnerships</p>
         </div>
-        <Link href="/products/add">
+        <Link href="/dashboard/company/products/add">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             Add Product
@@ -145,20 +131,48 @@ export function ProductCatalog() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <Card className="text-center py-12">
+          <CardContent>
+            <Loader2 className="h-8 w-8 text-muted-foreground mx-auto mb-4 animate-spin" />
+            <h3 className="text-lg font-medium mb-2">Loading products...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch your products</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <Card className="text-center py-12 border-destructive">
+          <CardContent>
+            <Package className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2 text-destructive">Error loading products</h3>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Product Display */}
-      <Tabs value={viewMode} className="w-full">
+      {!loading && !error && (
+        <Tabs value={viewMode} className="w-full">
         <TabsContent value="grid" className="mt-0">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <Card key={product.id} className="overflow-hidden">
                 <div className="aspect-video relative">
                   <img
-                    src={product.image || "/placeholder.svg"}
+                    src={product.productImageUrl || "/placeholder.svg"}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-2 right-2">
-                    <Badge variant={product.status === "published" ? "default" : "secondary"}>{product.status}</Badge>
+                    <Badge variant={product.isPublished ? "default" : "secondary"}>
+                      {product.isPublished ? "Published" : "Draft"}
+                    </Badge>
                   </div>
                 </div>
                 <CardHeader className="pb-3">
@@ -166,7 +180,7 @@ export function ProductCatalog() {
                     <div className="flex-1">
                       <CardTitle className="text-lg">{product.name}</CardTitle>
                       <CardDescription className="text-sm">
-                        {product.type} • {product.industry}
+                        {product.productType} • {product.industrySpecializationId || 'General'}
                       </CardDescription>
                     </div>
                     <DropdownMenu>
@@ -195,15 +209,15 @@ export function ProductCatalog() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{product.description}</p>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{product.shortDescription || product.detailedDescription}</p>
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Users className="h-4 w-4" />
-                      <span>{product.interestedPartners} interested</span>
+                      <span>0 interested</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <DollarSign className="h-4 w-4" />
-                      <span>{product.commission}</span>
+                      <span>{product.indicativeIncentive || 'N/A'}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -228,28 +242,30 @@ export function ProductCatalog() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.image || "/placeholder.svg"}
+                          src={product.productImageUrl || "/placeholder.svg"}
                           alt={product.name}
                           className="w-10 h-10 rounded object-cover"
                         />
                         <div>
                           <div className="font-medium">{product.name}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-1">{product.description}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{product.shortDescription || product.detailedDescription}</div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{product.type}</TableCell>
-                    <TableCell>{product.industry}</TableCell>
+                    <TableCell>{product.productType}</TableCell>
+                    <TableCell>{product.industrySpecializationId || 'General'}</TableCell>
                     <TableCell>
-                      <Badge variant={product.status === "published" ? "default" : "secondary"}>{product.status}</Badge>
+                      <Badge variant={product.isPublished ? "default" : "secondary"}>
+                        {product.isPublished ? "Published" : "Draft"}
+                      </Badge>
                     </TableCell>
-                    <TableCell>{product.interestedPartners}</TableCell>
-                    <TableCell>{product.commission}</TableCell>
+                    <TableCell>0</TableCell>
+                    <TableCell>{product.indicativeIncentive || 'N/A'}</TableCell>
                     <TableCell>{new Date(product.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -283,8 +299,10 @@ export function ProductCatalog() {
           </Card>
         </TabsContent>
       </Tabs>
+      )}
 
-      {filteredProducts.length === 0 && (
+      {/* Empty State */}
+      {products.length === 0 && !loading && !error && (
         <Card className="text-center py-12">
           <CardContent>
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -294,7 +312,7 @@ export function ProductCatalog() {
                 ? "Try adjusting your search or filters"
                 : "Get started by adding your first product"}
             </p>
-            <Link href="/products/add">
+            <Link href="/dashboard/company/products/add">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
