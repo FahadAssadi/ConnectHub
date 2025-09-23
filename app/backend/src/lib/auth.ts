@@ -1,13 +1,10 @@
 import { betterAuth } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nanoid } from "nanoid";
 
 import { db } from "@/db"; 
 import * as schema from "@/db/schema/auth-schema";
-import { userProfiles } from "@/db/schema/userProfile-schema";
-import { companies } from "@/db/schema/company-schema";
-import { bdPartners, individualBdPartners, companyBdPartners } from "@/db/schema/bd-partner-schema";
+import { UserController } from "@/controllers/user/UserController";
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -40,55 +37,14 @@ export const auth = betterAuth({
             }
             
             // Add the user profile based on the role provided during sign-up
-            const { role } = body;
+            const { role, ...userData } = body;
 
-            const [profile] = await db.insert(userProfiles).values({
-                id: nanoid(),
+            const userController = new UserController();
+            await userController.createUserProfile({
                 userId: newSession.user.id,
-                userType: role,
-            }).returning({ id: userProfiles.id })
-
-            const profileId = profile.id;
-
-            if (role === "company") {
-                // Create a company profile
-                const { companyName } = body;
-
-                await db.insert(companies).values({
-                    id: nanoid(),
-                    profileId: profileId,
-                    companyName: companyName,
-                });
-            } else if (role === "bd-partner") {
-                // Handle BD partner profile creation
-                const { profileType } = body; 
-
-                const [bdPartner] = await db.insert(bdPartners).values({
-                    id: nanoid(),
-                    profileId: profileId,
-                    profileType: profileType,
-                }).returning({ id: bdPartners.id });
-
-                const bdPartnerId = bdPartner.id;
-
-                if (profileType === "individual") {
-                    const { fullName } = body;
-
-                    await db.insert(individualBdPartners).values({
-                        id: nanoid(),
-                        bdPartnerId: bdPartnerId,
-                        fullName: fullName
-                    });
-                } else if (profileType === "company") {
-                    const { companyName } = body;
-
-                    await db.insert(companyBdPartners).values({
-                        id: nanoid(),
-                        bdPartnerId: bdPartnerId,
-                        companyName: companyName
-                    });
-                }
-            }
+                userRole: role,
+                userData: userData
+            });
         })
     }
 });

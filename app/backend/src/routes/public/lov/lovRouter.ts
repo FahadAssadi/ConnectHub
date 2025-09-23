@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { IndustryController } from '@/controllers/lov/industryController';
-import { LocationController } from '@/controllers/lov/locationController';
-import { EngagementController } from '@/controllers/lov/engagementController';
+import { IndustryController } from '@/controllers/lov/IndustryController';
+import { LocationController } from '@/controllers/lov/LocationController';
+import { EngagementController } from '@/controllers/lov/EngagementController';
 
 export const lovRouter = new Hono();
 

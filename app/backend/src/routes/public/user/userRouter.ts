@@ -1,26 +1,19 @@
 import { Hono } from 'hono'
-import { db } from '@/db/index.js';
-import { userProfiles } from '@/db/schema/userProfile-schema.js';
-import { eq } from 'drizzle-orm';
+import { UserController } from '@/controllers/user/UserController';
 
 const userRouter = new Hono();
+const userController = new UserController();
 
 // get user profile by userId
 userRouter.get('/:userId', async (c) => {
     const { userId } = c.req.param();
-    const result = await db
-        .select({
-            userType: userProfiles.userType,
-            registrationStage: userProfiles.registrationStage
-        })
-        .from(userProfiles)
-        .where(eq(userProfiles.userId, userId));
-
-    if (result.length === 0) {
-        return c.json({ error: 'User profile not found' }, 404);
+    
+    try {
+        const result = await userController.getUserType({ userId });
+        return c.json(result);
+    } catch (error) {
+        return c.json({ error: 'Failed to fetch user profile' }, 500);
     }
-
-    return c.json(result[0]);
 });
 
-export { userRouter };
+export default userRouter;
