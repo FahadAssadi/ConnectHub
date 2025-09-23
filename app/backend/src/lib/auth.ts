@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nanoid } from "nanoid";
 
 import { db } from "../db"; 
 import * as schema from "../db/schema/auth-schema";
@@ -42,6 +43,7 @@ export const auth = betterAuth({
             const { role } = body;
 
             const [profile] = await db.insert(userProfiles).values({
+                id: nanoid(),
                 userId: newSession.user.id,
                 userType: role,
             }).returning({ id: userProfiles.id })
@@ -56,6 +58,7 @@ export const auth = betterAuth({
                 const { companyName } = body;
 
                 await db.insert(companies).values({
+                    id: nanoid(),
                     profileId: profileId,
                     companyName: companyName,
                 });
@@ -64,6 +67,7 @@ export const auth = betterAuth({
                 const { profileType } = body; 
 
                 const [bdPartner] = await db.insert(bdPartners).values({
+                    id: nanoid(),
                     profileId: profileId,
                     profileType: profileType,
                 }).returning({ id: bdPartners.id });
@@ -77,6 +81,7 @@ export const auth = betterAuth({
                     const { fullName } = body;
 
                     await db.insert(individualBdPartners).values({
+                        id: nanoid(),
                         bdPartnerId: bdPartnerId,
                         fullName: fullName
                     });
@@ -84,6 +89,7 @@ export const auth = betterAuth({
                     const { companyName } = body;
 
                     await db.insert(companyBdPartners).values({
+                        id: nanoid(),
                         bdPartnerId: bdPartnerId,
                         companyName: companyName
                     });

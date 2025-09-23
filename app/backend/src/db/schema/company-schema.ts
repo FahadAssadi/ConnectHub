@@ -1,10 +1,9 @@
 import { pgTable, text, timestamp, boolean, integer, varchar } from "drizzle-orm/pg-core";
 import { userProfiles } from "./userProfile-schema";
 import { companyTypes, countries, industryCategories, industrySpecializations, industrySubCategories } from "./LOV-schema";
-import { nanoid } from "nanoid";
 
 export const companies = pgTable("companies", {
-  id: text("id").primaryKey().default(nanoid()),
+  id: text("id").primaryKey(),
   profileId: text("profile_id")
     .notNull()
     .unique()

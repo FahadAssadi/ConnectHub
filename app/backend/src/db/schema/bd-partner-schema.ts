@@ -1,11 +1,10 @@
 import { pgTable, text, timestamp, boolean, integer, varchar } from "drizzle-orm/pg-core";
 import { userProfiles } from "./userProfile-schema";
 import { cities, countries, engagementModels, industrySpecializations, states } from "./LOV-schema";
-import { nanoid } from "nanoid";
 
 // Base table with common fields
 export const bdPartners = pgTable("bd_partners", {
-  id: text("id").primaryKey().default(nanoid()),
+  id: text("id").primaryKey(),
   profileId: text("profile_id")
     .notNull()
     .unique()
@@ -41,7 +40,7 @@ export const bdPartners = pgTable("bd_partners", {
 
 // Individual-specific fields
 export const individualBdPartners = pgTable("individual_bd_partners", {
-  id: text("id").primaryKey().default(nanoid()),
+  id: text("id").primaryKey(),
   bdPartnerId: text("bd_partner_id")
     .notNull()
     .unique()
@@ -57,7 +56,7 @@ export const individualBdPartners = pgTable("individual_bd_partners", {
 
 // Company-specific fields
 export const companyBdPartners = pgTable("company_bd_partners", {
-  id: text("id").primaryKey().default(nanoid()),
+  id: text("id").primaryKey(),
   bdPartnerId: text("bd_partner_id")
     .notNull()
     .unique()

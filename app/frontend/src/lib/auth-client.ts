@@ -65,5 +65,20 @@ export const signIn = async (email: string, password: string, callbackURL = "/da
 
 export const getSession = async () => {
   const { data, error } = await authClient.getSession();
-  return { data, error };
+  
+  if (!data?.session) {
+    return { data: null, profileData: null, error };
+  }
+
+  const userId = data.session.userId;
+
+  const userProfile = await fetch(`http://localhost:5000/api/user/${userId}`);
+  const profileData = await userProfile.json();
+
+  return { data, profileData, error };
+}
+
+export const signOut = async () => {
+  const { error } = await authClient.signOut();
+  return { error };
 }
