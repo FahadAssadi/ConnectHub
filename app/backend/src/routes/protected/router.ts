@@ -22,4 +22,6 @@ protectedRouter.use('*', async (c, next) => {
     return next()
 })
 
+
+
 export default protectedRouter;
