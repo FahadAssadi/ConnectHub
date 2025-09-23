@@ -1,10 +1,9 @@
 import { Hono } from 'hono'
-import { db } from '@/db';
-import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 
-import { userProfiles } from '@/db/schema/userProfile-schema';
+import { UserController } from '@/controllers/user/UserController';
 
+const userController = new UserController();
 
 const userInfoRouter = new Hono<{
   Variables: {
@@ -21,3 +20,11 @@ userInfoRouter.get('/', async (c) => {
     }
 
     try {
+        const result = await userController.getCompleteUserProfile({ userId: user.id });
+        return c.json(result);
+    } catch (error) {
+        return c.json({ error: 'Failed to fetch user profile' }, 500);
+    }
+});
+
+export default userInfoRouter;

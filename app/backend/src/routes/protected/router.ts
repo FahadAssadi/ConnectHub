@@ -1,6 +1,8 @@
 import { Hono } from 'hono'
 import { auth } from '@/lib/auth'
 
+import userInfoRouter from '@/routes/protected/user/userInfoRouter';
+
 const protectedRouter = new Hono<{
     Variables: {
         user: typeof auth.$Infer.Session.user | null;
@@ -8,7 +10,25 @@ const protectedRouter = new Hono<{
     }
 }>()
 
-// Protected middleware - checks for valid session
+// First, parse the session from cookies/headers
+protectedRouter.use('*', async (c, next) => {
+    // Better Auth will parse the session from cookies and set it in context
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers,
+    });
+
+    if (session) {
+        c.set('user', session.user);
+        c.set('session', session.session);
+    } else {
+        c.set('user', null);
+        c.set('session', null);
+    }
+
+    return next();
+});
+
+// Then, check if user is authenticated for protected routes
 protectedRouter.use('*', async (c, next) => {
     const user = c.get('user')
     const session = c.get('session')
@@ -22,6 +42,7 @@ protectedRouter.use('*', async (c, next) => {
     return next()
 })
 
+protectedRouter.route("/user", userInfoRouter);
 
 
 export default protectedRouter;

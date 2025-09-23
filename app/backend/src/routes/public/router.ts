@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { lovRouter } from '@/routes/public/lov/lovRouter';
-import { userRouter } from '@/routes/public/user/userRouter';
+import userRouter from '@/routes/public/user/userRouter';
 
 const publicRouter = new Hono();
 
