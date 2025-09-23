@@ -103,18 +103,12 @@ export function Header() {
             </Button>
 
             {/* Login Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="hidden md:flex">
-                  Login
-                  <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Business Login</DropdownMenuItem>
-                <DropdownMenuItem>BD Partner Login</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href="/login">
+              <Button variant="ghost" className="hidden md:flex">
+                Login
+              </Button>
+            </Link>
+            
 
             {/* Get Started CTA */}
             <Link href="/register">

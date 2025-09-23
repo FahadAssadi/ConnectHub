@@ -40,7 +40,7 @@ export default function HomePage() {
                   Get matched with qualified BD partners
                 </div>
               </div>
-              <Link href="/register/company/stage1">
+              <Link href="/register/company">
                 <Button className="w-full" size="lg">
                   Register as Company
                 </Button>

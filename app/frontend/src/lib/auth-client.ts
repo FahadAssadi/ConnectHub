@@ -15,18 +15,19 @@ export const signInGoogle = async () => {
     /**
      * A URL to redirect if the user is newly registered
      */
-    newUserCallbackURL: "/welcome",
+    newUserCallbackURL: "/dashboard",
   });
 
   console.log(data);
 };
 
-export const signUp = async (email: string, password: string, name: string, callbackURL = "/dashboard") => {
+export const signUp = async (email: string, password: string, name: string, information: Record<string, any> = {}, callbackURL = "/dashboard") => {
   const { data, error } = await authClient.signUp.email({
     email, // user email address
     password, // user password -> min 8 characters by default
     name, // user display name
-    callbackURL // A URL to redirect to after the user verifies their email (optional)
+    callbackURL, // A URL to redirect to after the user verifies their email (optional)
+    ...information, // additional information to pass to the after hook
   }, {
         onRequest: (ctx) => {
             //show loading

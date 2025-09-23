@@ -48,6 +48,9 @@ export const auth = betterAuth({
 
             const profileId = profile.id;
 
+            console.log("Created profile with ID:", profileId);
+            console.log("Sign-up body:", body);
+
             if (role === "company") {
                 // Create a company profile
                 const { companyName } = body;
@@ -56,14 +59,17 @@ export const auth = betterAuth({
                     profileId: profileId,
                     companyName: companyName,
                 });
-            } else if (role === "bd_partner") {
+            } else if (role === "bd-partner") {
                 // Handle BD partner profile creation
-                const { profileType } = body; // 'individual' or 'company'
+                const { profileType } = body; 
 
                 const [bdPartner] = await db.insert(bdPartners).values({
                     profileId: profileId,
                     profileType: profileType,
                 }).returning({ id: bdPartners.id });
+
+                // Console log to verify bdPartner creation
+                console.log("Created BD Partner with ID:", bdPartner.id);
 
                 const bdPartnerId = bdPartner.id;
 
