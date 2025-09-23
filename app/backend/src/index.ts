@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import routerAPI from './routes/router'
 import { auth } from './lib/auth'
 import { cors } from 'hono/cors'
+import routerAPI from './routes'
 
 const app = new Hono<{
 	Variables: {

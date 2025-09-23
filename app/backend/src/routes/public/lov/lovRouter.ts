@@ -1,17 +1,27 @@
 import { Hono } from 'hono'
-import { db } from '../../db/index.js';
-import { industryCategories, industrySubCategories, countries, states, cities, incentiveMethods, companyTypes, engagementModels, industrySpecializations } from '../../db/schema/LOV-schema.js';
+import { db } from '@/db';
+import { 
+  industryCategories, 
+  industrySubCategories, 
+  countries, 
+  states, 
+  cities, 
+  incentiveMethods, 
+  companyTypes, 
+  engagementModels, 
+  industrySpecializations 
+} from '@/db/schema/LOV-schema.js';
 import { eq } from "drizzle-orm";
 
-export const metaRoute = new Hono();
+export const lovRouter = new Hono();
 
 // ------------------ INDUSTRY CATEGORIES ------------------
-metaRoute.get("/categories", async (c) => {
+lovRouter.get("/categories", async (c) => {
   const result = await db.select().from(industryCategories);
   return c.json(result);
 });
 
-metaRoute.post("/categories", async (c) => {
+lovRouter.post("/categories", async (c) => {
   const body = await c.req.json();
   const inserted = await db
     .insert(industryCategories)
@@ -24,7 +34,7 @@ metaRoute.post("/categories", async (c) => {
   return c.json(inserted[0]);
 });
 
-metaRoute.get("/categories/:id", async (c) => {
+lovRouter.get("/categories/:id", async (c) => {
   const { id } = c.req.param();
   const result = await db
     .select()
@@ -34,12 +44,12 @@ metaRoute.get("/categories/:id", async (c) => {
 });
 
 // ------------------ SUBCATEGORIES ------------------
-metaRoute.get("/subcategories", async (c) => {
+lovRouter.get("/subcategories", async (c) => {
   const result = await db.select().from(industrySubCategories);
   return c.json(result);
 });
 
-metaRoute.post("/subcategories", async (c) => {
+lovRouter.post("/subcategories", async (c) => {
   const body = await c.req.json();
   const inserted = await db
     .insert(industrySubCategories)
@@ -53,12 +63,12 @@ metaRoute.post("/subcategories", async (c) => {
 });
 
 // ------------------ SPECIALIZATIONS ------------------
-metaRoute.get("/specializations", async (c) => {
+lovRouter.get("/specializations", async (c) => {
   const result = await db.select().from(industrySpecializations);
   return c.json(result);
 });
 
-metaRoute.post("/specializations", async (c) => {
+lovRouter.post("/specializations", async (c) => {
   const body = await c.req.json();
   const inserted = await db
     .insert(industrySpecializations)
@@ -72,12 +82,12 @@ metaRoute.post("/specializations", async (c) => {
 });
 
 // ------------------ ENGAGEMENT MODELS ------------------
-metaRoute.get("/engagement-models", async (c) => {
+lovRouter.get("/engagement-models", async (c) => {
   const result = await db.select().from(engagementModels);
   return c.json(result);
 });
 
-metaRoute.post("/engagement-models", async (c) => {
+lovRouter.post("/engagement-models", async (c) => {
   const body = await c.req.json();
   const inserted = await db
     .insert(engagementModels)
@@ -87,60 +97,60 @@ metaRoute.post("/engagement-models", async (c) => {
 });
 
 // ------------------ INCENTIVE METHODS ------------------
-metaRoute.get("/incentive-methods", async (c) => {
+lovRouter.get("/incentive-methods", async (c) => {
   const result = await db.select().from(incentiveMethods);
   return c.json(result);
 });
 
-metaRoute.post("/incentive-methods", async (c) => {
+lovRouter.post("/incentive-methods", async (c) => {
   const body = await c.req.json();
   const inserted = await db.insert(incentiveMethods).values(body).returning();
   return c.json(inserted[0]);
 });
 
 // ------------------ COMPANY TYPES ------------------
-metaRoute.get("/company-types", async (c) => {
+lovRouter.get("/company-types", async (c) => {
   const result = await db.select().from(companyTypes);
   return c.json(result);
 });
 
-metaRoute.post("/company-types", async (c) => {
+lovRouter.post("/company-types", async (c) => {
   const body = await c.req.json();
   const inserted = await db.insert(companyTypes).values(body).returning();
   return c.json(inserted[0]);
 });
 
 // ------------------ COUNTRIES ------------------
-metaRoute.get("/countries", async (c) => {
+lovRouter.get("/countries", async (c) => {
   const result = await db.select().from(countries);
   return c.json(result);
 });
 
-metaRoute.post("/countries", async (c) => {
+lovRouter.post("/countries", async (c) => {
   const body = await c.req.json();
   const inserted = await db.insert(countries).values(body).returning();
   return c.json(inserted[0]);
 });
 
 // ------------------ STATES ------------------
-metaRoute.get("/states", async (c) => {
+lovRouter.get("/states", async (c) => {
   const result = await db.select().from(states);
   return c.json(result);
 });
 
-metaRoute.post("/states", async (c) => {
+lovRouter.post("/states", async (c) => {
   const body = await c.req.json();
   const inserted = await db.insert(states).values(body).returning();
   return c.json(inserted[0]);
 });
 
 // ------------------ CITIES ------------------
-metaRoute.get("/cities", async (c) => {
+lovRouter.get("/cities", async (c) => {
   const result = await db.select().from(cities);
   return c.json(result);
 });
 
-metaRoute.post("/cities", async (c) => {
+lovRouter.post("/cities", async (c) => {
   const body = await c.req.json();
   const inserted = await db.insert(cities).values(body).returning();
   return c.json(inserted[0]);

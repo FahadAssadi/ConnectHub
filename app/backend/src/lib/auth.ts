@@ -3,11 +3,11 @@ import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nanoid } from "nanoid";
 
-import { db } from "../db"; 
-import * as schema from "../db/schema/auth-schema";
-import { userProfiles } from "../db/schema/userProfile-schema";
-import { companies } from "../db/schema/company-schema";
-import { bdPartners, individualBdPartners, companyBdPartners } from "../db/schema/bd-partner-schema";
+import { db } from "@/db"; 
+import * as schema from "@/db/schema/auth-schema";
+import { userProfiles } from "@/db/schema/userProfile-schema";
+import { companies } from "@/db/schema/company-schema";
+import { bdPartners, individualBdPartners, companyBdPartners } from "@/db/schema/bd-partner-schema";
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {

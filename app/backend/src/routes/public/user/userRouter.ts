@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { db } from '../../db/index.js';
-import { userProfiles } from '../../db/schema/userProfile-schema.js';
+import { db } from '@/db/index.js';
+import { userProfiles } from '@/db/schema/userProfile-schema.js';
 import { eq } from 'drizzle-orm';
 
 const userRouter = new Hono();
