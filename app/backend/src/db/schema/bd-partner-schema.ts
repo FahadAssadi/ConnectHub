@@ -1,25 +1,17 @@
 import { pgTable, text, timestamp, boolean, integer, varchar } from "drizzle-orm/pg-core";
 import { userProfiles } from "./userProfile-schema";
 import { cities, countries, engagementModels, industrySpecializations, states } from "./LOV-schema";
+import { nanoid } from "nanoid";
 
+// Base table with common fields
 export const bdPartners = pgTable("bd_partners", {
-  id: text("id").primaryKey(),
+  id: text("id").primaryKey().default(nanoid()),
   profileId: text("profile_id")
     .notNull()
     .unique()
     .references(() => userProfiles.id, { onDelete: "cascade" }),
   
-  // Individual BD Partner fields
-  fullName: varchar("full_name", { length: 200 }),
-  email: varchar("email", { length: 250 }),
-  mobileNumber: varchar("mobile_number", { length: 50 }),
-  linkedinProfile: varchar("linkedin_profile", { length: 500 }),
-  
-  // Company BD Partner fields (when profileType is 'company')
-  companyName: varchar("company_name", { length: 200 }),
-  registrationNumber: varchar("registration_number", { length: 100 }),
-  websiteUrl: varchar("website_url", { length: 500 }),
-  numberOfEmployees: integer("number_of_employees"),
+  profileType: varchar("profile_type", { length: 20 }).notNull(), // 'individual', 'company'
   
   // Location
   countryId: integer("country_id")
@@ -47,6 +39,40 @@ export const bdPartners = pgTable("bd_partners", {
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()).notNull(),
 });
 
+// Individual-specific fields
+export const individualBdPartners = pgTable("individual_bd_partners", {
+  id: text("id").primaryKey().default(nanoid()),
+  bdPartnerId: text("bd_partner_id")
+    .notNull()
+    .unique()
+    .references(() => bdPartners.id, { onDelete: "cascade" }),
+
+  fullName: varchar("full_name", { length: 200 }).notNull(),
+  mobileNumber: varchar("mobile_number", { length: 50 }),
+  linkedinProfile: varchar("linkedin_profile", { length: 500 }),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").$onUpdate(() => new Date()).notNull(),
+});
+
+// Company-specific fields
+export const companyBdPartners = pgTable("company_bd_partners", {
+  id: text("id").primaryKey().default(nanoid()),
+  bdPartnerId: text("bd_partner_id")
+    .notNull()
+    .unique()
+    .references(() => bdPartners.id, { onDelete: "cascade" }),
+  
+  companyName: varchar("company_name", { length: 200 }).notNull(),
+  registrationNumber: varchar("registration_number", { length: 100 }),
+  websiteUrl: varchar("website_url", { length: 500 }),
+  numberOfEmployees: integer("number_of_employees"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").$onUpdate(() => new Date()).notNull(),
+});
+
+// Keep existing related tables as they are
 export const bdPartnerIndustries = pgTable("bd_partner_industries", {
   id: text("id").primaryKey(),
   bdPartnerId: text("bd_partner_id")
