@@ -50,9 +50,6 @@ export const auth = betterAuth({
 
             const profileId = profile.id;
 
-            console.log("Created profile with ID:", profileId);
-            console.log("Sign-up body:", body);
-
             if (role === "company") {
                 // Create a company profile
                 const { companyName } = body;
@@ -71,9 +68,6 @@ export const auth = betterAuth({
                     profileId: profileId,
                     profileType: profileType,
                 }).returning({ id: bdPartners.id });
-
-                // Console log to verify bdPartner creation
-                console.log("Created BD Partner with ID:", bdPartner.id);
 
                 const bdPartnerId = bdPartner.id;
 
