@@ -6,7 +6,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <DashboardLayout isCompany={true}>
+    <DashboardLayout isCompany={false}>
       {children}
     </DashboardLayout>
   );

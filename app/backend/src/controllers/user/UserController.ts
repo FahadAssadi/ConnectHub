@@ -39,6 +39,7 @@ export class UserController {
     const { userId, userRole, userData } = data;
 
     try {
+      
         const [newProfile] = await db.insert(userProfiles).values({
             id: userId,
             userId: userId,

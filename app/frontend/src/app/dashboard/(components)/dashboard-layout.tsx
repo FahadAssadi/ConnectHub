@@ -14,11 +14,38 @@ import { BreadcrumbNavigation } from "@/components/breadcrumb-navigation"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
+  isCompany: boolean
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, isCompany }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const navigation = [];
+  const quickActions = [];
+
+  if (isCompany) {
+    navigation.push(
+      { name: "Dashboard", href: "/dashboard/company", icon: LayoutDashboard },
+      { name: "Products", href: "/dashboard/company/products", icon: Package },
+      { name: "Partners", href: "/dashboard/company/partners", icon: Users },
+      { name: "Company Profile", href: "/dashboard/company/profile", icon: Building2 },
+    );
+    quickActions.push(
+      { name: "Add Product", href: "/dashboard/company/products/add", icon: Plus },
+      { name: "Review Applications", href: "/partners/applications", icon: FileText },
+    );
+  } else {
+    navigation.push(
+      { name: "Dashboard", href: "/dashboard/bd-partner", icon: LayoutDashboard },
+      { name: "Marketplace", href: "/dashboard/bd-partner/marketplace", icon: Package },
+      { name: "My Partners", href: "/dashboard/bd-partner/partners", icon: Users },
+      { name: "Profile", href: "/dashboard/bd-partner/profile", icon: Building2 },
+    );
+    quickActions.push(
+      { name: "Browse Products", href: "/dashboard/bd-partner/marketplace", icon: Package },
+      { name: "Send EOIs", href: "/dashboard/bd-partner/applications", icon: Users },
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -58,30 +85,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   })}
                 </ul>
               </li>
-              {/* Quick Actions Section */}
-              <li className="mt-auto">
+                {/* Quick Actions Section */}
+                <li className="mt-auto">
                 <div className="text-xs font-semibold leading-6 text-sidebar-foreground/60 mb-2">Quick Actions</div>
                 <ul role="list" className="-mx-2 space-y-1">
-                  <li>
-                    <Link
-                      href="/dashboard/company/products/add"
+                  {quickActions.map((action) => (
+                  <li key={action.name}>
+                    <Link href={action.href}
                       className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex gap-x-3 rounded-md p-2 text-sm leading-6"
                     >
-                      <Plus className="h-4 w-4 shrink-0" />
-                      Add Product
+                      <action.icon className="h-4 w-4 shrink-0" />
+                      {action.name}
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      href="/partners/applications"
-                      className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex gap-x-3 rounded-md p-2 text-sm leading-6"
-                    >
-                      <FileText className="h-4 w-4 shrink-0" />
-                      Review Applications
-                    </Link>
-                  </li>
+                  ))}
                 </ul>
-              </li>
+                </li>
             </ul>
           </nav>
         </div>
@@ -194,10 +213,3 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     </div>
   )
 }
-
-const navigation = [
-  { name: "Dashboard", href: "/dashboard/", icon: LayoutDashboard },
-  { name: "Products", href: "/dashboard/company/products", icon: Package },
-  { name: "Partners", href: "/dashboard/company/partners", icon: Users },
-  { name: "Company Profile", href: "/dashboard/company/profile", icon: Building2 },
-]

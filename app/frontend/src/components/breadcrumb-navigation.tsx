@@ -30,6 +30,7 @@ const getRouteSegments = (pathname: string) => {
   const breadcrumbs = [{ label: "Home", href: "/dashboard" }]
 
   let currentPath = ""
+  let ommittedPath = segments.slice(0, 2).reduce((acc, segment) => acc + `/${segment}`, "");
   const updatedSegments = segments.slice(2)
 
   updatedSegments.forEach((segment) => {
@@ -39,12 +40,12 @@ const getRouteSegments = (pathname: string) => {
     if (routeLabels[currentPath]) {
       breadcrumbs.push({
         label: routeLabels[currentPath],
-        href: currentPath,
+        href: ommittedPath + currentPath,
       })
     } else {
       breadcrumbs.push({
         label: segment.charAt(0).toUpperCase() + segment.slice(1),
-        href: currentPath,
+        href: ommittedPath + currentPath,
       })
     }
   })
