@@ -275,10 +275,12 @@ export default function ProductCatalog() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
+                          <Link href={`/dashboard/company/products/${product.id}/applications`}>
+                            <DropdownMenuItem>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Applications
+                            </DropdownMenuItem>
+                          </Link>
                           <Link href={`/products/${product.id}/edit`}>
                             <DropdownMenuItem>
                               <Edit className="h-4 w-4 mr-2" />

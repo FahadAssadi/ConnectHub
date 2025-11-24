@@ -38,7 +38,7 @@ export function DashboardLayout({ children, isCompany }: DashboardLayoutProps) {
     navigation.push(
       { name: "Dashboard", href: "/dashboard/bd-partner", icon: LayoutDashboard },
       { name: "Marketplace", href: "/dashboard/bd-partner/marketplace", icon: Package },
-      { name: "My Partners", href: "/dashboard/bd-partner/partners", icon: Users },
+      { name: "My Applications", href: "/dashboard/bd-partner/applications", icon: Users },
       { name: "Profile", href: "/dashboard/bd-partner/profile", icon: Building2 },
     );
     quickActions.push(

@@ -244,6 +244,19 @@ export class ProductController {
     }
   }
 
+  async getAllProducts() {
+    try {
+      const result = await db
+        .select()
+        .from(products)
+        .orderBy(asc(products.name));
+      return { success: true, products: result };
+    } catch (error) {
+      console.error('Error fetching all products:', error);
+      return { error: 'Failed to fetch all products' };
+    } 
+  }
+
   // ==================== PRODUCT PRIMARY REGIONS METHODS ====================
 
   async addProductPrimaryRegion(data: {

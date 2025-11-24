@@ -1,8 +1,9 @@
 import { Hono } from 'hono'
 import { auth } from '@/lib/auth'
 
-import userInfoRouter from '@/routes/protected/user/userInfoRouter';
-import productRouter from '@/routes/protected/products/productRouter';
+import userInfoRouter from '@/routes/protected/userInfoRouter';
+import { productRouter } from '@/routes/protected/productRouter';
+import { relationshipRouter } from '@/routes/protected/relationshipRouter';
 
 const protectedRouter = new Hono<{
     Variables: {
@@ -45,5 +46,6 @@ protectedRouter.use('*', async (c, next) => {
 
 protectedRouter.route("/user", userInfoRouter);
 protectedRouter.route("/products", productRouter);
+protectedRouter.route("/relationship", relationshipRouter);
 
 export default protectedRouter;

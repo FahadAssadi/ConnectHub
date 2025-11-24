@@ -4,7 +4,7 @@ import { ProductController } from '@/controllers/product/ProductController';
 
 const productController = new ProductController();
 
-const productRouter = new Hono<{
+export const productRouter = new Hono<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
     session: typeof auth.$Infer.Session.session | null
@@ -579,5 +579,3 @@ productRouter.delete('/documents/:documentId', async (c) => {
     return c.json({ error: 'Failed to delete product document' }, 500);
   }
 });
-
-export default productRouter;

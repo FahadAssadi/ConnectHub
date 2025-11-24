@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import publicRouter from '@/routes/public/router';
+import { publicRouter } from '@/routes/public/router';
 import protectedRouter from '@/routes/protected/router';
 
 const router = new Hono();

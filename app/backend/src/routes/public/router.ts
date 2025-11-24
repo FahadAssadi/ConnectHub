@@ -1,13 +1,13 @@
 import { Hono } from 'hono'
-import { lovRouter } from '@/routes/public/lov/lovRouter';
-import userRouter from '@/routes/public/user/userRouter';
+import { lovRouter } from '@/routes/public/lovRouter';
+import userRouter from '@/routes/public/userRouter';
+import { productRouter } from '@/routes/public/productRouter';
 
-const publicRouter = new Hono();
+export const publicRouter = new Hono();
 
 publicRouter.get("/health", (c) => c.text("OK"));
 publicRouter.notFound((c) => c.text("Not Found", 404));
 
 publicRouter.route("/lov", lovRouter)
 publicRouter.route("/user", userRouter)
-
-export default publicRouter;
+publicRouter.route("/products", productRouter);
