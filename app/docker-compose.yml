@@ -1,18 +1,19 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: connecthub-db
+  db:
+    image: postgres:16-alpine
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: connecthub_user
+      POSTGRES_PASSWORD: connecthub_pass
       POSTGRES_DB: connecthub
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    
 volumes:
   postgres_data:
+
+

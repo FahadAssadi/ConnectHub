@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-
-import { AuthModule } from '@thallesp/nestjs-better-auth';
-import { auth } from '../lib/auth'
+import { DatabaseModule } from './database/database.module';
 
 @Module({
-  imports: [
-    AuthModule.forRoot({ auth }),
-  ],
+  imports: [DatabaseModule],
   controllers: [AppController],
   providers: [AppService],
 })
