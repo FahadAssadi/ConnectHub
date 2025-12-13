@@ -152,6 +152,7 @@ model IndustryCategory {
   updatedAt DateTime @updatedAt
 
   industrySubCategories IndustrySubCategory[]
+  profileIndustries ProfileIndustry[]
 
   @@map("industry_category")
 }
@@ -165,6 +166,7 @@ model IndustrySubCategory {
   updatedAt   DateTime            @updatedAt
 
   industrySpecialisations IndustrySpecialisation[]
+  profileIndustries ProfileIndustry[]
 
   @@unique([name, categoryId])
   @@map("industry_sub_category")
@@ -178,6 +180,8 @@ model IndustrySpecialisation {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
+  profileIndustries ProfileIndustry[]
+
   @@unique([name, subCategoryId])
   @@map("industry_specialisation")
 }
@@ -188,6 +192,8 @@ model EngagementModel {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  profileEngagements ProfileEngagement[]
 
   @@map("engagement_model")
 }
@@ -208,9 +214,10 @@ model YearsOfExperience {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("years_of_experience")
   bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
   bdpartnerOrganizationProfiles BDPartnerOrganizationProfile[]
+
+  @@map("years_of_experience")
 }
 
 model BuisnessStructure {
@@ -219,8 +226,9 @@ model BuisnessStructure {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("buisness_structure")
   bdpartnerOrganizationProfiles BDPartnerOrganizationProfile[]
+
+  @@map("buisness_structure")
 }
 
 model ToolPlatform {
@@ -228,6 +236,8 @@ model ToolPlatform {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  profileTools ProfileTool[]
 
   @@map("tool_platform")
 }
@@ -237,6 +247,8 @@ model Certification {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  profileCertifications ProfileCertification[]
 
   @@map("certification")
 }
@@ -275,10 +287,11 @@ model StateOrProvince {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
 
   @@unique([name, countryId])
   @@map("state_or_province")
-  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
 }
 
 
@@ -353,6 +366,11 @@ model CompanyProfile {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  profileIndustries ProfileIndustry[]
+  profileEngagements ProfileEngagement[]
+  profileTools ProfileTool[]
+  profileCertifications ProfileCertification[]
+
   @@index([commonDetailsId])
   @@index([userProfileId])
   @@map("company_profile")
@@ -392,6 +410,11 @@ model BDPartnerIndividualProfile {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  profileIndustries ProfileIndustry[]
+  profileEngagements ProfileEngagement[]
+  profileTools ProfileTool[]
+  profileCertifications ProfileCertification[]
+
   @@index([userProfileId])
   @@map("bd_partner_individual_profile")
 }
@@ -420,8 +443,125 @@ model BDPartnerOrganizationProfile {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  profileIndustries ProfileIndustry[]
+  profileEngagements ProfileEngagement[]
+  profileTools ProfileTool[]
+  profileCertifications ProfileCertification[]
+
   @@index([commonDetailsId])
   @@index([userProfileId])
   @@map("bd_partner_organization_profile")
 }
 
+// ============================================
+// POLYMORPHIC JUNCTION TABLES
+// ============================================
+
+model ProfileIndustry {
+  id                String   @id @default(cuid())
+  
+  // Polymorphic Relation Fields
+  companyProfileId            String?
+  companyProfile              CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfileId String?
+  bdpartnerIndividualProfile   BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerOrganizationProfileId String?
+  bdpartnerOrganizationProfile   BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
+
+  // Industry references - flexible hierarchy (can select category, subcategory, and/or specialization)
+  industryCategoryId        String?
+  industryCategory          IndustryCategory? @relation(fields: [industryCategoryId], references: [id], onDelete: Cascade)
+  industrySubCategoryId     String?
+  industrySubCategory       IndustrySubCategory? @relation(fields: [industrySubCategoryId], references: [id], onDelete: Cascade)
+  industrySpecialisationId  String?
+  industrySpecialisation    IndustrySpecialisation? @relation(fields: [industrySpecialisationId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([companyProfileId, industryCategoryId, industrySubCategoryId, industrySpecialisationId], name: "company_industry_unique")
+  @@unique([bdpartnerIndividualProfileId, industryCategoryId, industrySubCategoryId, industrySpecialisationId], name: "bd_ind_industry_unique")
+  @@unique([bdpartnerOrganizationProfileId, industryCategoryId, industrySubCategoryId, industrySpecialisationId], name: "bd_org_industry_unique")
+  @@index([companyProfileId])
+  @@index([bdpartnerIndividualProfileId])
+  @@index([bdpartnerOrganizationProfileId])
+  @@map("profile_industry")
+}
+
+model ProfileEngagement {
+  id                             String   @id @default(cuid())
+  
+  // Polymorphic references
+  companyProfileId                String?
+  companyProfile                  CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfileId    String?
+  bdpartnerIndividualProfile      BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerOrganizationProfileId  String?
+  bdpartnerOrganizationProfile    BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
+  
+  engagementModelId       String
+  engagementModel         EngagementModel @relation(fields: [engagementModelId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyProfileId, engagementModelId], name: "company_engagement_unique")
+  @@unique([bdpartnerIndividualProfileId, engagementModelId], name: "bd_ind_engagement_unique")
+  @@unique([bdpartnerOrganizationProfileId, engagementModelId], name: "bd_org_engagement_unique")
+  @@index([companyProfileId])
+  @@index([bdpartnerIndividualProfileId])
+  @@index([bdpartnerOrganizationProfileId])
+  @@map("profile_engagement")
+}
+
+model ProfileTool {
+  id                             String   @id @default(cuid())
+  
+  // Polymorphic references 
+  companyProfileId                String?
+  companyProfile                  CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfileId    String?
+  bdpartnerIndividualProfile      BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerOrganizationProfileId  String?
+  bdpartnerOrganizationProfile    BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
+  
+  toolPlatformId          String
+  toolPlatform            ToolPlatform @relation(fields: [toolPlatformId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyProfileId, toolPlatformId], name: "company_tool_unique")
+  @@unique([bdpartnerIndividualProfileId, toolPlatformId], name: "bd_ind_tool_unique")
+  @@unique([bdpartnerOrganizationProfileId, toolPlatformId], name: "bd_org_tool_unique")
+  @@index([companyProfileId])
+  @@index([bdpartnerIndividualProfileId])
+  @@index([bdpartnerOrganizationProfileId])
+  @@map("profile_tool")
+}
+
+model ProfileCertification {
+  id                             String   @id @default(cuid())
+  
+  // Polymorphic references - exactly ONE must be populated
+  companyProfileId                String?
+  companyProfile                  CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfileId    String?
+  bdpartnerIndividualProfile      BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerOrganizationProfileId  String?
+  bdpartnerOrganizationProfile    BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
+  
+  certificationId         String
+  certification           Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyProfileId, certificationId], name: "company_cert_unique")
+  @@unique([bdpartnerIndividualProfileId, certificationId], name: "bd_ind_cert_unique")
+  @@unique([bdpartnerOrganizationProfileId, certificationId], name: "bd_org_cert_unique")
+  @@index([companyProfileId])
+  @@index([bdpartnerIndividualProfileId])
+  @@index([bdpartnerOrganizationProfileId])
+  @@map("profile_certification")
+}
