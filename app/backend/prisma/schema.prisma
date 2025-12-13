@@ -7,6 +7,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================
+// AUTH MODELS (Better Auth Integration)
+// ============================================
+
 model User {
   id            String    @id
   name          String
@@ -15,8 +19,10 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
   sessions      Session[]
   accounts      Account[]
+  profile       UserProfile?
 
   @@unique([email])
   @@map("user")
@@ -69,3 +75,151 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserType {
+  PENDING
+  COMPANY
+  BD_PARTNER_INDIVIDUAL
+  BD_PARTNER_ORGANIZATION
+  ADMIN
+}
+
+enum ProfileStatus {
+  DRAFT
+  INCOMPLETE
+  PENDING_APPROVAL      // Submitted for admin review
+  APPROVED              // Admin approved, visible on platform
+  ACTIVE                // Deprecated - use APPROVED
+  VERIFIED              // Enhanced verification level
+  REJECTED              // Admin rejected
+  SUSPENDED             // Admin suspended
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING_APPROVAL      // Submitted for admin review
+  APPROVED              // Admin approved, visible to BD partners
+  REJECTED              // Admin rejected
+  INACTIVE              // Company deactivated
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum EOIStatus {
+  PENDING               // Submitted, awaiting response
+  ACCEPTED              // Recipient accepted the EOI
+  REJECTED              // Recipient rejected the EOI
+  WITHDRAWN             // Sender withdrew the EOI
+  EXPIRED               // EOI expired without response
+}
+
+enum EOIInitiator {
+  BD_PARTNER            // BD Partner sent EOI to Company
+  COMPANY               // Company sent EOI to BD Partner
+}
+
+// ============================================
+// FLEXIBLE LIST OF VALUES SYSTEM
+// ============================================
+
+model IndustryCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  industrySubCategories IndustrySubCategory[]
+
+  @@map("industry_category")
+}
+
+model IndustrySubCategory {
+  id          String              @id @default(cuid())
+  name        String
+  categoryId  String
+  category    IndustryCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  industrySpecialisations IndustrySpecialisation[]
+
+  @@unique([name, categoryId])
+  @@map("industry_sub_category")
+}
+
+model IndustrySpecialisation {
+  id              String                @id @default(cuid())
+  name            String
+  subCategoryId   String
+  subCategory     IndustrySubCategory   @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@unique([name, subCategoryId])
+  @@map("industry_specialisation")
+}
+
+model EngagementModel {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("engagement_model")
+}
+
+model IncentiveMethod {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("incentive_method")
+}
+
+model YearsOfExperience {
+  id        String   @id @default(cuid())
+  range     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("years_of_experience")
+}
+
+model BuisnessStructure {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("buisness_structure")
+}
+
+// ============================================
+// USER MODELS
+// ============================================
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      UserType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_profile")
+}
+
