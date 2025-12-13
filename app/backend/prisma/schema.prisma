@@ -90,10 +90,8 @@ enum UserType {
 
 enum ProfileStatus {
   DRAFT
-  INCOMPLETE
   PENDING_APPROVAL      // Submitted for admin review
   APPROVED              // Admin approved, visible on platform
-  ACTIVE                // Deprecated - use APPROVED
   VERIFIED              // Enhanced verification level
   REJECTED              // Admin rejected
   SUSPENDED             // Admin suspended
@@ -126,6 +124,21 @@ enum EOIStatus {
 enum EOIInitiator {
   BD_PARTNER            // BD Partner sent EOI to Company
   COMPANY               // Company sent EOI to BD Partner
+}
+
+enum EnglishFluency {
+  BASIC
+  INTERMEDIATE
+  FLUENT
+}
+
+enum EmployeeCount {
+  ONE_TO_TEN
+  ELEVEN_TO_FIFTY
+  FIFTY_ONE_TO_TWO_HUNDRED
+  TWO_HUNDRED_ONE_TO_FIVE_HUNDRED
+  FIVE_HUNDRED_ONE_TO_THOUSAND
+  OVER_THOUSAND
 }
 
 // ============================================
@@ -196,6 +209,8 @@ model YearsOfExperience {
   updatedAt DateTime @updatedAt
 
   @@map("years_of_experience")
+  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
+  bdpartnerOrganizationProfiles BDPartnerOrganizationProfile[]
 }
 
 model BuisnessStructure {
@@ -205,21 +220,208 @@ model BuisnessStructure {
   updatedAt DateTime @updatedAt
 
   @@map("buisness_structure")
+  bdpartnerOrganizationProfiles BDPartnerOrganizationProfile[]
 }
+
+model ToolPlatform {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tool_platform")
+}
+
+model Certification {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("certification")
+}
+
+// ============================================
+// GEOGRAPHY MODELS
+// ============================================
+
+model Country {
+  id        String   @id @default(cuid())
+
+  name        String    @unique
+  iso2Code    String    @unique
+  iso3Code    String    @unique
+  numericCode String?   @unique
+  phoneCode   String?   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stateOrProvinces StateOrProvince[]
+  commonCompanyDetails CommonCompanyDetails[]
+  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
+  
+  @@map("country")
+}
+
+model StateOrProvince {
+  id        String   @id @default(cuid())
+
+  name          String
+  abbreviation  String
+
+  countryId String
+  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, countryId])
+  @@map("state_or_province")
+  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
+}
+
 
 // ============================================
 // USER MODELS
 // ============================================
 
 model UserProfile {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String          @id @default(cuid())
+  userId    String          @unique
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   type      UserType
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    ProfileStatus   @default(DRAFT)
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  companyProfile CompanyProfile?
+  bdpartnerIndividualProfile BDPartnerIndividualProfile?
+  bdpartnerOrganizationProfile BDPartnerOrganizationProfile?
 
   @@index([userId])
   @@map("user_profile")
+}
+
+model CommonCompanyDetails {
+  id                     String   @id @default(cuid())
+
+  // Basic Details
+  companyName             String
+  businessRegNumber       String   @unique
+  registeredBuisnessName  String?
+  countryOfRegistrationId String
+  countryOfRegistration   Country  @relation(fields: [countryOfRegistrationId], references: [id], onDelete: Restrict)
+  registeredAddress       String 
+
+  // Contract Details
+  contactPersonName        String
+  contactPersonDesignation String
+  contactPersonEmail       String  @unique
+  contactPersonPhone       String
+
+  // Additional Details
+  websiteURL              String?
+  linkedInURL             String?
+  logoURL                 String?
+  profileDeckURL          String?
+  yearOfEstablishment     Int?
+  description             String?   @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyProfile CompanyProfile?
+  bdpartnerOrganizationProfile BDPartnerOrganizationProfile?
+
+  @@map("common_organisation_details")
+}
+
+model CompanyProfile {
+  id            String   @id @default(cuid())
+  userProfileId String   @unique
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  commonDetailsId String @unique
+  commonDetails   CommonCompanyDetails @relation(fields: [commonDetailsId], references: [id], onDelete: Cascade)
+
+  ndaAgreed           Boolean  @default(false)
+  headOfficeLocation  String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([commonDetailsId])
+  @@index([userProfileId])
+  @@map("company_profile")
+}
+
+model BDPartnerIndividualProfile {
+  id            String   @id @default(cuid())
+  userProfileId String   @unique
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  // 1. Personal Details
+  firstName         String
+  lastName          String
+  email             String  @unique
+  phone             String
+
+  countryId         String
+  country           Country  @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  stateOrProvinceId String
+  stateOrProvince   StateOrProvince? @relation(fields: [stateOrProvinceId], references: [id], onDelete: Restrict)
+  city              String
+
+  ndaAgreed         Boolean  @default(false)
+
+  // 2. Professional Details
+  yearsOfExperienceId         String
+  yearsOfExperience           YearsOfExperience @relation(fields: [yearsOfExperienceId], references: [id], onDelete: Restrict)
+  fluencyInEnglish            EnglishFluency?
+  referralNetworkDescription  String? @db.Text
+  availabilityHoursPerWeek    Decimal?
+
+  // 3. Additional Details
+  linkedInURL   String?
+  resumeURL     String?
+  idProofURL    String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userProfileId])
+  @@map("bd_partner_individual_profile")
+}
+
+model BDPartnerOrganizationProfile {
+  id            String   @id @default(cuid())
+  userProfileId String   @unique
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  // 1. Organization Details
+  commonDetailsId String @unique
+  commonDetails   CommonCompanyDetails @relation(fields: [commonDetailsId], references: [id], onDelete: Cascade)
+
+  // 2. Professional Details
+  buisnessStructureId         String
+  buisnessStructure           BuisnessStructure @relation(fields: [buisnessStructureId], references: [id], onDelete: Restrict)
+  employeeCount               EmployeeCount
+  yearsOfExperienceId         String
+  yearsOfExperience           YearsOfExperience @relation(fields: [yearsOfExperienceId], references: [id], onDelete: Restrict)
+  availabilityHoursPerWeek    Decimal?
+  referralNetworkDescription  String? @db.Text
+  existingClientBase          String? @db.Text
+
+  ndaAgreed                   Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([commonDetailsId])
+  @@index([userProfileId])
+  @@map("bd_partner_organization_profile")
 }
 
