@@ -97,12 +97,37 @@ enum ProfileStatus {
   SUSPENDED             // Admin suspended
 }
 
+enum ProductType {
+  PRODUCT
+  SERVICE
+}
+
 enum ProductStatus {
   DRAFT
   PENDING_APPROVAL      // Submitted for admin review
   APPROVED              // Admin approved, visible to BD partners
   REJECTED              // Admin rejected
   INACTIVE              // Company deactivated
+}
+
+enum PaymentModel {
+  COMMISSION_BASED
+  FIXED_FEE
+  REVENUE_SHARE
+  HYBRID
+  RETAINER
+}
+
+enum SalesSupportMaterialType {
+  BROCHURE_DATASHEET
+  DEMO_VIDEO
+  BUSINESS_USECASE
+  PITCH_DECK
+  EMAIL_TEMPLATE
+  COLD_CALL_SCRIPT
+  OBJECTION_HANDLING_GUIDE
+  COMPETITOR_COMPARISON
+  PRICING_SHEET
 }
 
 enum ApplicationStatus {
@@ -153,6 +178,7 @@ model IndustryCategory {
 
   industrySubCategories IndustrySubCategory[]
   profileIndustries ProfileIndustry[]
+  productTargetCustomerIndustries ProductTargetCustomerIndustry[]
 
   @@map("industry_category")
 }
@@ -167,6 +193,7 @@ model IndustrySubCategory {
 
   industrySpecialisations IndustrySpecialisation[]
   profileIndustries ProfileIndustry[]
+  productTargetCustomerIndustries ProductTargetCustomerIndustry[]
 
   @@unique([name, categoryId])
   @@map("industry_sub_category")
@@ -181,6 +208,7 @@ model IndustrySpecialisation {
   updatedAt       DateTime              @updatedAt
 
   profileIndustries ProfileIndustry[]
+  productPreferredBDProfiles ProductPreferredBDProfile[]
 
   @@unique([name, subCategoryId])
   @@map("industry_specialisation")
@@ -194,6 +222,7 @@ model EngagementModel {
   updatedAt   DateTime @updatedAt
 
   profileEngagements ProfileEngagement[]
+  products Product[]
 
   @@map("engagement_model")
 }
@@ -216,6 +245,7 @@ model YearsOfExperience {
 
   bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
   bdpartnerOrganizationProfiles BDPartnerOrganizationProfile[]
+  products Product[]
 
   @@map("years_of_experience")
 }
@@ -249,6 +279,7 @@ model Certification {
   updatedAt DateTime @updatedAt
 
   profileCertifications ProfileCertification[]
+  productPreferredCertifications ProductPreferredCertification[]
 
   @@map("certification")
 }
@@ -272,6 +303,7 @@ model Country {
   stateOrProvinces StateOrProvince[]
   commonCompanyDetails CommonCompanyDetails[]
   bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
+  productTargetRegions ProductTargetRegion[]
   
   @@map("country")
 }
@@ -289,6 +321,7 @@ model StateOrProvince {
   updatedAt DateTime @updatedAt
   
   bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
+  productTargetRegions ProductTargetRegion[]
 
   @@unique([name, countryId])
   @@map("state_or_province")
@@ -370,6 +403,7 @@ model CompanyProfile {
   profileEngagements ProfileEngagement[]
   profileTools ProfileTool[]
   profileCertifications ProfileCertification[]
+  products Product[]
 
   @@index([commonDetailsId])
   @@index([userProfileId])
@@ -468,7 +502,7 @@ model ProfileIndustry {
   bdpartnerOrganizationProfileId String?
   bdpartnerOrganizationProfile   BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
 
-  // Industry references - flexible hierarchy (can select category, subcategory, and/or specialization)
+  // Industry references 
   industryCategoryId        String?
   industryCategory          IndustryCategory? @relation(fields: [industryCategoryId], references: [id], onDelete: Cascade)
   industrySubCategoryId     String?
@@ -564,4 +598,138 @@ model ProfileCertification {
   @@index([bdpartnerIndividualProfileId])
   @@index([bdpartnerOrganizationProfileId])
   @@map("profile_certification")
+}
+
+// ============================================
+// PRODUCT/SERVICE MODELS
+// ============================================
+
+model Product {
+  id                String   @id @default(cuid())
+  companyProfileId  String
+  companyProfile    CompanyProfile @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+
+  // 1. Product/Service Info
+  name              String
+  type              ProductType
+  status            ProductStatus   @default(DRAFT)
+  shortDescription       String   
+  detailedDescription    String     @db.Text
+  imageURL         String?
+  
+  // 2. Commercial Details
+  paymentModel                  PaymentModel
+  indicativeIncentive           String?
+  preferredYearsOfExperienceId  String?
+  preferredYearsOfExperience    YearsOfExperience? @relation(fields: [preferredYearsOfExperienceId], references: [id], onDelete: Restrict)
+  engagementMethodId            String?
+  engagementMethod              EngagementModel? @relation(fields: [engagementMethodId], references: [id], onDelete: Cascade)
+  salesTrainingAvailable        Boolean   @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  productTargetCustomerIndustries ProductTargetCustomerIndustry[]
+  productTargetRegions ProductTargetRegion[]
+  productSalesSupportMaterials ProductSalesSupportMaterial[]
+  productPreferredBDProfiles ProductPreferredBDProfile[]
+  productPreferredCertifications ProductPreferredCertification[]
+  
+  @@index([companyProfileId])
+  @@index([status])
+  @@map("product")
+}
+
+// ============================================
+// PRODUCT JUNCTION TABLES
+// ============================================
+
+model ProductTargetCustomerIndustry {
+  id                       String   @id @default(cuid())
+  productId                String
+  product                  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  industryCategoryId       String?
+  industryCategory         IndustryCategory? @relation(fields: [industryCategoryId], references: [id], onDelete: Cascade)
+  industrySubCategoryId    String?
+  industrySubCategory      IndustrySubCategory? @relation(fields: [industrySubCategoryId], references: [id], onDelete: Cascade)
+  
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([productId, industryCategoryId, industrySubCategoryId])
+  @@index([productId])
+  @@map("product_target_customer_industry")
+}
+
+model ProductTargetRegion {
+  id                String   @id @default(cuid())
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  countryId         String
+  country           Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  stateOrProvinceId String?
+  stateOrProvince   StateOrProvince? @relation(fields: [stateOrProvinceId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([productId, countryId])
+  @@index([productId])
+  @@map("product_target_region")
+}
+
+
+model ProductSalesSupportMaterial {
+  id                String                     @id @default(cuid())
+  productId         String
+  product           Product                    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  materialType      SalesSupportMaterialType
+  title             String
+  fileURL           String?
+  linkURL           String?
+  description       String?                    @db.Text
+  
+  visibleAfterEOI   Boolean                    @default(true)
+  
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  @@index([productId])
+  @@index([materialType])
+  @@map("product_sales_support_material")
+}
+
+model ProductPreferredBDProfile {
+  id                       String                  @id @default(cuid())
+  productId                String
+  product                  Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  industrySpecialisationId String
+  industrySpecialisation   IndustrySpecialisation  @relation(fields: [industrySpecialisationId], references: [id], onDelete: Cascade)
+  
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+
+  @@unique([productId, industrySpecialisationId])
+  @@index([productId])
+  @@map("product_preferred_bd_profile")
+}
+
+model ProductPreferredCertification {
+  id                String         @id @default(cuid())
+  productId         String
+  product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  certificationId   String
+  certification     Certification  @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([productId, certificationId])
+  @@index([productId])
+  @@map("product_preferred_certification")
 }
