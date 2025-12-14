@@ -4,6 +4,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "../../generated/prisma/client";
 import { Pool } from "pg";
 
+import { UserSchema } from "@connecthub/shared";
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
 });
