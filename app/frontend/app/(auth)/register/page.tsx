@@ -80,8 +80,7 @@ export default function RegisterFormPage() {
       if (error) {
         setErrors({ submit: error.message || "Registration failed. Please try again." })
       } else if (data) {
-        // Redirect to onboarding to select profile type
-        router.push("/onboarding/select-role")
+        router.push("/onboarding")
       }
     } catch (err) {
       console.error("Signup error:", err)
@@ -98,7 +97,7 @@ export default function RegisterFormPage() {
       // Google OAuth signup - Better Auth handles this
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/onboarding/select-role", // Redirect to profile selection after OAuth
+        callbackURL: "/onboarding",
       })
     } catch (err) {
       console.error("Google auth error:", err)

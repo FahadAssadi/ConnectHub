@@ -285,50 +285,6 @@ model Certification {
 }
 
 // ============================================
-// GEOGRAPHY MODELS
-// ============================================
-
-model Country {
-  id        String   @id @default(cuid())
-
-  name        String    @unique
-  iso2Code    String    @unique
-  iso3Code    String    @unique
-  numericCode String?   @unique
-  phoneCode   String?   @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  stateOrProvinces StateOrProvince[]
-  commonCompanyDetails CommonCompanyDetails[]
-  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
-  productTargetRegions ProductTargetRegion[]
-  
-  @@map("country")
-}
-
-model StateOrProvince {
-  id        String   @id @default(cuid())
-
-  name          String
-  abbreviation  String
-
-  countryId String
-  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
-  productTargetRegions ProductTargetRegion[]
-
-  @@unique([name, countryId])
-  @@map("state_or_province")
-}
-
-
-// ============================================
 // USER MODELS
 // ============================================
 
@@ -358,8 +314,7 @@ model CommonCompanyDetails {
   companyName             String
   businessRegNumber       String   @unique
   registeredBuisnessName  String?
-  countryOfRegistrationId String
-  countryOfRegistration   Country  @relation(fields: [countryOfRegistrationId], references: [id], onDelete: Restrict)
+  countryOfRegistration   String
   registeredAddress       String 
 
   // Contract Details
@@ -421,10 +376,9 @@ model BDPartnerIndividualProfile {
   email             String  @unique
   phone             String
 
-  countryId         String
-  country           Country  @relation(fields: [countryId], references: [id], onDelete: Restrict)
-  stateOrProvinceId String
-  stateOrProvince   StateOrProvince? @relation(fields: [stateOrProvinceId], references: [id], onDelete: Restrict)
+  country           String
+  countryIso2Code   String
+  stateOrProvince   String
   city              String
 
   ndaAgreed         Boolean  @default(false)
@@ -667,15 +621,14 @@ model ProductTargetRegion {
   productId         String
   product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
-  countryId         String
-  country           Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
-  stateOrProvinceId String?
-  stateOrProvince   StateOrProvince? @relation(fields: [stateOrProvinceId], references: [id], onDelete: Cascade)
+  country           String
+  countryIso2Code   String
+  stateOrProvince   String?
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  @@unique([productId, countryId])
+  @@unique([productId, countryIso2Code])
   @@index([productId])
   @@map("product_target_region")
 }

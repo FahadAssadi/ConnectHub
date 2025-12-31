@@ -14,9 +14,9 @@ export default function BDPartnerTypeSelection() {
 
   const handleContinue = () => {
     if (partnerType === "individual") {
-      router.push("/register/bd-partner/individual")
+      router.push("/onboarding/bd-individual")
     } else if (partnerType === "company") {
-      router.push("/register/bd-partner/company")
+      router.push("/onboarding/bd-org")
     }
   }
 

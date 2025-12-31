@@ -48,11 +48,20 @@ export class RegisterBdIndividualDto {
   })
   phone: string;
 
-  @IsUUID('4', { message: 'countryId must be a valid UUID' })
-  countryId: string;
+  @IsString({ message: 'country must be a string' })
+  @MinLength(2, { message: 'country must be at least 2 characters' })
+  @MaxLength(100, { message: 'country must not exceed 100 characters' })
+  country: string;
 
-  @IsUUID('4', { message: 'stateOrProvinceId must be a valid UUID' })
-  stateOrProvinceId: string;
+  @IsString({ message: 'countryIso2Code must be a string' })
+  @MinLength(2, { message: 'countryIso2Code must be exactly 2 characters' })
+  @MaxLength(2, { message: 'countryIso2Code must be exactly 2 characters' })
+  countryIso2Code: string;
+
+  @IsString({ message: 'stateOrProvince must be a string' })
+  @MinLength(2, { message: 'stateOrProvince must be at least 2 characters' })
+  @MaxLength(100, { message: 'stateOrProvince must not exceed 100 characters' })
+  stateOrProvince: string;
 
   @IsString({ message: 'city must be a string' })
   @MinLength(2, { message: 'city must be at least 2 characters' })

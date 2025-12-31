@@ -72,16 +72,6 @@ export class UserProfileService {
       );
     }
 
-    // Verify country exists
-    const countryExists = await this.db.country.findUnique({
-      where: { id: dto.commonDetails.countryOfRegistrationId },
-    });
-    if (!countryExists) {
-      throw new BadRequestException(
-        'Country with the provided ID does not exist.',
-      );
-    }
-
     // Verify businessRegNumber is unique
     const existingBiz = await this.db.commonCompanyDetails.findUnique({
       where: { businessRegNumber: dto.commonDetails.businessRegNumber },
@@ -121,7 +111,7 @@ export class UserProfileService {
             companyName: dto.commonDetails.companyName,
             businessRegNumber: dto.commonDetails.businessRegNumber,
             registeredBuisnessName: dto.commonDetails.registeredBuisnessName,
-            countryOfRegistrationId: dto.commonDetails.countryOfRegistrationId,
+            countryOfRegistration: dto.commonDetails.countryOfRegistration,
             registeredAddress: dto.commonDetails.registeredAddress,
             contactPersonName: dto.commonDetails.contactPersonName,
             contactPersonDesignation: dto.commonDetails.contactPersonDesignation,
@@ -180,19 +170,11 @@ export class UserProfileService {
       );
     }
 
-    // Verify all required FK relationships exist
-    const [country, state, yearsOfExp] = await Promise.all([
-      this.db.country.findUnique({ where: { id: dto.countryId } }),
-      this.db.stateOrProvince.findUnique({ where: { id: dto.stateOrProvinceId } }),
-      this.db.yearsOfExperience.findUnique({ where: { id: dto.yearsOfExperienceId } }),
-    ]);
+    // Verify years of experience exists
+    const yearsOfExp = await this.db.yearsOfExperience.findUnique({
+      where: { id: dto.yearsOfExperienceId },
+    });
 
-    if (!country) {
-      throw new BadRequestException('Country with the provided ID does not exist.');
-    }
-    if (!state) {
-      throw new BadRequestException('State/Province with the provided ID does not exist.');
-    }
     if (!yearsOfExp) {
       throw new BadRequestException('Years of experience with the provided ID does not exist.');
     }
@@ -228,8 +210,9 @@ export class UserProfileService {
             lastName: dto.lastName,
             email: dto.email,
             phone: dto.phone,
-            countryId: dto.countryId,
-            stateOrProvinceId: dto.stateOrProvinceId,
+            country: dto.country,
+            countryIso2Code: dto.countryIso2Code,
+            stateOrProvince: dto.stateOrProvince,
             city: dto.city,
             ndaAgreed: dto.ndaAgreed,
             yearsOfExperienceId: dto.yearsOfExperienceId,
@@ -276,15 +259,11 @@ export class UserProfileService {
     }
 
     // Verify all required FK relationships exist
-    const [country, businessStructure, yearsOfExp] = await Promise.all([
-      this.db.country.findUnique({ where: { id: dto.commonDetails.countryOfRegistrationId } }),
+    const [businessStructure, yearsOfExp] = await Promise.all([
       this.db.buisnessStructure.findUnique({ where: { id: dto.buisnessStructureId } }),
       this.db.yearsOfExperience.findUnique({ where: { id: dto.yearsOfExperienceId } }),
     ]);
 
-    if (!country) {
-      throw new BadRequestException('Country with the provided ID does not exist.');
-    }
     if (!businessStructure) {
       throw new BadRequestException('Business structure with the provided ID does not exist.');
     }
@@ -331,7 +310,7 @@ export class UserProfileService {
             companyName: dto.commonDetails.companyName,
             businessRegNumber: dto.commonDetails.businessRegNumber,
             registeredBuisnessName: dto.commonDetails.registeredBuisnessName,
-            countryOfRegistrationId: dto.commonDetails.countryOfRegistrationId,
+            countryOfRegistration: dto.commonDetails.countryOfRegistration,
             registeredAddress: dto.commonDetails.registeredAddress,
             contactPersonName: dto.commonDetails.contactPersonName,
             contactPersonDesignation: dto.commonDetails.contactPersonDesignation,

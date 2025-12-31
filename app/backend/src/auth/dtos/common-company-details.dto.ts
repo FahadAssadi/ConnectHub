@@ -33,8 +33,10 @@ export class CommonCompanyDetailsDto {
   @MaxLength(255)
   registeredBuisnessName?: string;
 
-  @IsUUID('4', { message: 'countryOfRegistrationId must be a valid UUID' })
-  countryOfRegistrationId: string;
+  @IsString({ message: 'countryOfRegistration must be a string' })
+  @MinLength(2, { message: 'countryOfRegistration must be at least 2 characters' })
+  @MaxLength(100, { message: 'countryOfRegistration must not exceed 100 characters' })
+  countryOfRegistration: string;
 
   @IsString({ message: 'registeredAddress must be a string' })
   @MinLength(5, { message: 'registeredAddress must be at least 5 characters' })
