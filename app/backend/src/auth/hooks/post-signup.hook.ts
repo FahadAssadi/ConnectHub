@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AfterHook } from '@thallesp/nestjs-better-auth';
+import { AfterHook, Hook } from '@thallesp/nestjs-better-auth';
 import type { AuthHookContext } from '@thallesp/nestjs-better-auth';
 import { UserProfileService } from '../services/user-profile.service.js';
 
@@ -10,13 +10,14 @@ import { UserProfileService } from '../services/user-profile.service.js';
  * This separates auth provisioning (Better Auth) from domain onboarding.
  * The user then completes their profile via the /registration endpoints.
  */
+@Hook()
 @Injectable()
 export class PostSignupHook {
   constructor(private readonly userProfileService: UserProfileService) {}
 
   @AfterHook('/sign-up/email')
   async handleEmailSignup(ctx: AuthHookContext) {
-    const userId = ctx.context.user?.id;
+    const userId = ctx.context.newSession?.user?.id;
 
     if (!userId) {
       // User should exist at this point in the hook chain
@@ -29,7 +30,7 @@ export class PostSignupHook {
 
   @AfterHook('/sign-in/oauth')
   async handleOAuthSignup(ctx: AuthHookContext) {
-    const userId = ctx.context.user?.id;
+    const userId = ctx.context.newSession?.user?.id;
 
     if (!userId) {
       return;
