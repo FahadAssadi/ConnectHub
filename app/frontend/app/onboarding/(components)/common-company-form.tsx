@@ -9,17 +9,14 @@ export interface CommonCompanyDetailsFormProps {
   data: {
     companyName: string
     businessRegNumber: string
-    registeredBuisnessName?: string
-    countryOfRegistrationId: string
-    registeredAddress: string
-    contactPersonName: string
-    contactPersonDesignation: string
+    country: string
+    countryIso2Code: string
+    stateOrProvince: string
+    address: string
     contactPersonEmail: string
     contactPersonPhone: string
-    websiteURL?: string
-    linkedInURL?: string
-    logoURL?: string
-    profileDeckURL?: string
+    officialWebsite?: string
+    linkedInProfileURL?: string
     yearOfEstablishment?: number
     description?: string
   }
@@ -46,7 +43,7 @@ export function CommonCompanyDetailsForm({
           <Input
             id="companyName"
             value={data.companyName}
-            onChange={(e) => onChange("companyName", e.target.value)}
+            onChange={(e) => onChange("commonDetails.companyName", e.target.value)}
             className={errors.companyName ? "border-red-500" : ""}
             placeholder="Acme Corporation"
           />
@@ -59,7 +56,7 @@ export function CommonCompanyDetailsForm({
           <Input
             id="businessRegNumber"
             value={data.businessRegNumber}
-            onChange={(e) => onChange("businessRegNumber", e.target.value)}
+            onChange={(e) => onChange("commonDetails.businessRegNumber", e.target.value)}
             className={errors.businessRegNumber ? "border-red-500" : ""}
             placeholder="123456789"
           />
@@ -68,88 +65,53 @@ export function CommonCompanyDetailsForm({
           )}
         </div>
 
-        {/* Registered Business Name */}
+        {/* Address */}
         <div className="space-y-2">
-          <Label htmlFor="registeredBuisnessName">Registered Business Name</Label>
-          <Input
-            id="registeredBuisnessName"
-            value={data.registeredBuisnessName || ""}
-            onChange={(e) => onChange("registeredBuisnessName", e.target.value)}
-            placeholder="Full registered legal name"
+          <Label htmlFor="address">Address *</Label>
+          <Textarea
+            id="address"
+            value={data.address}
+            onChange={(e) => onChange("commonDetails.address", e.target.value)}
+            className={errors.address ? "border-red-500" : ""}
+            placeholder="Street address, city, postal code"
+            rows={3}
           />
+          {errors.address && (
+            <p className="text-sm text-red-500">{errors.address}</p>
+          )}
         </div>
 
         {/* Country */}
         <div className="space-y-2">
-          <Label htmlFor="countryOfRegistrationId">Country of Registration *</Label>
+          <Label htmlFor="country">Country of Registration *</Label>
           <select
-            id="countryOfRegistrationId"
-            value={data.countryOfRegistrationId}
-            onChange={(e) => onChange("countryOfRegistrationId", e.target.value)}
+            id="country"
+            value={data.country}
+            onChange={(e) => {
+              const selected = countries.find(c => c.name === e.target.value)
+              onChange("commonDetails.country", e.target.value)
+              if (selected?.id) {
+                onChange("commonDetails.countryIso2Code", selected.id)
+              }
+            }}
             className={`w-full px-3 py-2 border rounded-md ${
-              errors.countryOfRegistrationId ? "border-red-500" : "border-gray-300"
+              errors.country ? "border-red-500" : "border-gray-300"
             }`}
           >
             <option value="">Select a country</option>
             {countries.map((country) => (
-              <option key={country.id} value={country.id}>
+              <option key={country.id} value={country.name}>
                 {country.name}
               </option>
             ))}
           </select>
-          {errors.countryOfRegistrationId && (
-            <p className="text-sm text-red-500">{errors.countryOfRegistrationId}</p>
-          )}
-        </div>
-
-        {/* Registered Address */}
-        <div className="space-y-2">
-          <Label htmlFor="registeredAddress">Registered Address *</Label>
-          <Textarea
-            id="registeredAddress"
-            value={data.registeredAddress}
-            onChange={(e) => onChange("registeredAddress", e.target.value)}
-            className={errors.registeredAddress ? "border-red-500" : ""}
-            placeholder="Street address, city, postal code"
-            rows={3}
-          />
-          {errors.registeredAddress && (
-            <p className="text-sm text-red-500">{errors.registeredAddress}</p>
+          {errors.country && (
+            <p className="text-sm text-red-500">{errors.country}</p>
           )}
         </div>
 
         <div className="border-t pt-4 mt-4">
-          <h3 className="font-semibold text-lg mb-4">Contact Person</h3>
-
-          {/* Contact Name */}
-          <div className="space-y-2 mb-4">
-            <Label htmlFor="contactPersonName">Name *</Label>
-            <Input
-              id="contactPersonName"
-              value={data.contactPersonName}
-              onChange={(e) => onChange("contactPersonName", e.target.value)}
-              className={errors.contactPersonName ? "border-red-500" : ""}
-              placeholder="John Doe"
-            />
-            {errors.contactPersonName && (
-              <p className="text-sm text-red-500">{errors.contactPersonName}</p>
-            )}
-          </div>
-
-          {/* Contact Designation */}
-          <div className="space-y-2 mb-4">
-            <Label htmlFor="contactPersonDesignation">Designation *</Label>
-            <Input
-              id="contactPersonDesignation"
-              value={data.contactPersonDesignation}
-              onChange={(e) => onChange("contactPersonDesignation", e.target.value)}
-              className={errors.contactPersonDesignation ? "border-red-500" : ""}
-              placeholder="CEO"
-            />
-            {errors.contactPersonDesignation && (
-              <p className="text-sm text-red-500">{errors.contactPersonDesignation}</p>
-            )}
-          </div>
+          <h3 className="font-semibold text-lg mb-4">Contact Information</h3>
 
           {/* Contact Email */}
           <div className="space-y-2 mb-4">
@@ -158,9 +120,9 @@ export function CommonCompanyDetailsForm({
               id="contactPersonEmail"
               type="email"
               value={data.contactPersonEmail}
-              onChange={(e) => onChange("contactPersonEmail", e.target.value)}
+              onChange={(e) => onChange("commonDetails.contactPersonEmail", e.target.value)}
               className={errors.contactPersonEmail ? "border-red-500" : ""}
-              placeholder="john@acme.com"
+              placeholder="contact@acme.com"
             />
             {errors.contactPersonEmail && (
               <p className="text-sm text-red-500">{errors.contactPersonEmail}</p>
@@ -174,7 +136,7 @@ export function CommonCompanyDetailsForm({
               id="contactPersonPhone"
               type="tel"
               value={data.contactPersonPhone}
-              onChange={(e) => onChange("contactPersonPhone", e.target.value)}
+              onChange={(e) => onChange("commonDetails.contactPersonPhone", e.target.value)}
               className={errors.contactPersonPhone ? "border-red-500" : ""}
               placeholder="+1-555-0123"
             />
@@ -189,49 +151,25 @@ export function CommonCompanyDetailsForm({
 
           {/* Website */}
           <div className="space-y-2 mb-4">
-            <Label htmlFor="websiteURL">Website</Label>
+            <Label htmlFor="officialWebsite">Website</Label>
             <Input
-              id="websiteURL"
+              id="officialWebsite"
               type="url"
-              value={data.websiteURL || ""}
-              onChange={(e) => onChange("websiteURL", e.target.value)}
+              value={data.officialWebsite || ""}
+              onChange={(e) => onChange("commonDetails.officialWebsite", e.target.value)}
               placeholder="https://www.acme.com"
             />
           </div>
 
           {/* LinkedIn */}
           <div className="space-y-2 mb-4">
-            <Label htmlFor="linkedInURL">LinkedIn Profile</Label>
+            <Label htmlFor="linkedInProfileURL">LinkedIn Profile</Label>
             <Input
-              id="linkedInURL"
+              id="linkedInProfileURL"
               type="url"
-              value={data.linkedInURL || ""}
-              onChange={(e) => onChange("linkedInURL", e.target.value)}
+              value={data.linkedInProfileURL || ""}
+              onChange={(e) => onChange("commonDetails.linkedInProfileURL", e.target.value)}
               placeholder="https://linkedin.com/company/acme"
-            />
-          </div>
-
-          {/* Logo */}
-          <div className="space-y-2 mb-4">
-            <Label htmlFor="logoURL">Logo URL</Label>
-            <Input
-              id="logoURL"
-              type="url"
-              value={data.logoURL || ""}
-              onChange={(e) => onChange("logoURL", e.target.value)}
-              placeholder="https://cdn.acme.com/logo.png"
-            />
-          </div>
-
-          {/* Profile Deck */}
-          <div className="space-y-2 mb-4">
-            <Label htmlFor="profileDeckURL">Profile Deck URL</Label>
-            <Input
-              id="profileDeckURL"
-              type="url"
-              value={data.profileDeckURL || ""}
-              onChange={(e) => onChange("profileDeckURL", e.target.value)}
-              placeholder="https://cdn.acme.com/profile-deck.pdf"
             />
           </div>
 
@@ -242,7 +180,7 @@ export function CommonCompanyDetailsForm({
               id="yearOfEstablishment"
               type="number"
               value={data.yearOfEstablishment || ""}
-              onChange={(e) => onChange("yearOfEstablishment", e.target.value ? parseInt(e.target.value) : "")}
+              onChange={(e) => onChange("commonDetails.yearOfEstablishment", e.target.value ? parseInt(e.target.value) : "")}
               placeholder="2020"
               min="1800"
               max={new Date().getFullYear()}
@@ -255,7 +193,7 @@ export function CommonCompanyDetailsForm({
             <Textarea
               id="description"
               value={data.description || ""}
-              onChange={(e) => onChange("description", e.target.value)}
+              onChange={(e) => onChange("commonDetails.description", e.target.value)}
               placeholder="Tell us about your company..."
               rows={4}
             />

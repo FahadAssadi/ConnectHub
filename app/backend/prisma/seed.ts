@@ -55,7 +55,7 @@ async function clearLOVTables() {
     await prisma.yearsOfExperience.deleteMany({});
     
     console.log('Deleting Business Structures...');
-    await prisma.buisnessStructure.deleteMany({});
+    await prisma.businessStructure.deleteMany({});
     
     console.log('Deleting Certifications...');
     await prisma.certification.deleteMany({});
@@ -196,7 +196,7 @@ async function seedBusinessStructures() {
   const rows = await parseCSV('business-model.csv');
 
   for (const [, name] of rows) {
-    await prisma.buisnessStructure.upsert({
+    await prisma.businessStructure.upsert({
       where: { name },
       update: {},
       create: { name },

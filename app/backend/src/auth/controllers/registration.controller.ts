@@ -109,7 +109,7 @@ export class RegistrationController {
    *
    * Request body: RegisterBdOrgDto
    * - commonDetails: CommonCompanyDetailsDto (company info, contact details)
-   * - buisnessStructureId: UUID
+   * - businessStructureId: UUID
    * - employeeCount: EmployeeCount enum
    * - yearsOfExperienceId: UUID
    * - availabilityHoursPerWeek?: number

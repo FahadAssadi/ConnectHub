@@ -184,32 +184,6 @@ CREATE TABLE "certification" (
 );
 
 -- CreateTable
-CREATE TABLE "country" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "iso2Code" TEXT NOT NULL,
-    "iso3Code" TEXT NOT NULL,
-    "numericCode" TEXT,
-    "phoneCode" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "country_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "state_or_province" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "abbreviation" TEXT NOT NULL,
-    "countryId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "state_or_province_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "user_profile" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -227,7 +201,7 @@ CREATE TABLE "common_organisation_details" (
     "companyName" TEXT NOT NULL,
     "businessRegNumber" TEXT NOT NULL,
     "registeredBuisnessName" TEXT,
-    "countryOfRegistrationId" TEXT NOT NULL,
+    "countryOfRegistration" TEXT NOT NULL,
     "registeredAddress" TEXT NOT NULL,
     "contactPersonName" TEXT NOT NULL,
     "contactPersonDesignation" TEXT NOT NULL,
@@ -266,8 +240,9 @@ CREATE TABLE "bd_partner_individual_profile" (
     "lastName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
-    "countryId" TEXT NOT NULL,
-    "stateOrProvinceId" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "countryIso2Code" TEXT NOT NULL,
+    "stateOrProvince" TEXT NOT NULL,
     "city" TEXT NOT NULL,
     "ndaAgreed" BOOLEAN NOT NULL DEFAULT false,
     "yearsOfExperienceId" TEXT NOT NULL,
@@ -288,7 +263,7 @@ CREATE TABLE "bd_partner_organization_profile" (
     "id" TEXT NOT NULL,
     "userProfileId" TEXT NOT NULL,
     "commonDetailsId" TEXT NOT NULL,
-    "buisnessStructureId" TEXT NOT NULL,
+    "businessStructureId" TEXT NOT NULL,
     "employeeCount" "EmployeeCount" NOT NULL,
     "yearsOfExperienceId" TEXT NOT NULL,
     "availabilityHoursPerWeek" DECIMAL(65,30),
@@ -392,8 +367,9 @@ CREATE TABLE "product_target_customer_industry" (
 CREATE TABLE "product_target_region" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
-    "countryId" TEXT NOT NULL,
-    "stateOrProvinceId" TEXT,
+    "country" TEXT NOT NULL,
+    "countryIso2Code" TEXT NOT NULL,
+    "stateOrProvince" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -479,24 +455,6 @@ CREATE UNIQUE INDEX "tool_platform_name_key" ON "tool_platform"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "certification_name_key" ON "certification"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "country_name_key" ON "country"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "country_iso2Code_key" ON "country"("iso2Code");
-
--- CreateIndex
-CREATE UNIQUE INDEX "country_iso3Code_key" ON "country"("iso3Code");
-
--- CreateIndex
-CREATE UNIQUE INDEX "country_numericCode_key" ON "country"("numericCode");
-
--- CreateIndex
-CREATE UNIQUE INDEX "country_phoneCode_key" ON "country"("phoneCode");
-
--- CreateIndex
-CREATE UNIQUE INDEX "state_or_province_name_countryId_key" ON "state_or_province"("name", "countryId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_profile_userId_key" ON "user_profile"("userId");
@@ -631,7 +589,7 @@ CREATE UNIQUE INDEX "product_target_customer_industry_productId_industryCategory
 CREATE INDEX "product_target_region_productId_idx" ON "product_target_region"("productId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "product_target_region_productId_countryId_key" ON "product_target_region"("productId", "countryId");
+CREATE UNIQUE INDEX "product_target_region_productId_countryIso2Code_key" ON "product_target_region"("productId", "countryIso2Code");
 
 -- CreateIndex
 CREATE INDEX "product_sales_support_material_productId_idx" ON "product_sales_support_material"("productId");
@@ -664,13 +622,7 @@ ALTER TABLE "industry_sub_category" ADD CONSTRAINT "industry_sub_category_catego
 ALTER TABLE "industry_specialisation" ADD CONSTRAINT "industry_specialisation_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "industry_sub_category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "state_or_province" ADD CONSTRAINT "state_or_province_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "country"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "user_profile" ADD CONSTRAINT "user_profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "common_organisation_details" ADD CONSTRAINT "common_organisation_details_countryOfRegistrationId_fkey" FOREIGN KEY ("countryOfRegistrationId") REFERENCES "country"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "company_profile" ADD CONSTRAINT "company_profile_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "user_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -682,12 +634,6 @@ ALTER TABLE "company_profile" ADD CONSTRAINT "company_profile_commonDetailsId_fk
 ALTER TABLE "bd_partner_individual_profile" ADD CONSTRAINT "bd_partner_individual_profile_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "user_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bd_partner_individual_profile" ADD CONSTRAINT "bd_partner_individual_profile_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "country"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "bd_partner_individual_profile" ADD CONSTRAINT "bd_partner_individual_profile_stateOrProvinceId_fkey" FOREIGN KEY ("stateOrProvinceId") REFERENCES "state_or_province"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "bd_partner_individual_profile" ADD CONSTRAINT "bd_partner_individual_profile_yearsOfExperienceId_fkey" FOREIGN KEY ("yearsOfExperienceId") REFERENCES "years_of_experience"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -697,7 +643,7 @@ ALTER TABLE "bd_partner_organization_profile" ADD CONSTRAINT "bd_partner_organiz
 ALTER TABLE "bd_partner_organization_profile" ADD CONSTRAINT "bd_partner_organization_profile_commonDetailsId_fkey" FOREIGN KEY ("commonDetailsId") REFERENCES "common_organisation_details"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bd_partner_organization_profile" ADD CONSTRAINT "bd_partner_organization_profile_buisnessStructureId_fkey" FOREIGN KEY ("buisnessStructureId") REFERENCES "buisness_structure"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "bd_partner_organization_profile" ADD CONSTRAINT "bd_partner_organization_profile_businessStructureId_fkey" FOREIGN KEY ("businessStructureId") REFERENCES "buisness_structure"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bd_partner_organization_profile" ADD CONSTRAINT "bd_partner_organization_profile_yearsOfExperienceId_fkey" FOREIGN KEY ("yearsOfExperienceId") REFERENCES "years_of_experience"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -776,12 +722,6 @@ ALTER TABLE "product_target_customer_industry" ADD CONSTRAINT "product_target_cu
 
 -- AddForeignKey
 ALTER TABLE "product_target_region" ADD CONSTRAINT "product_target_region_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "product_target_region" ADD CONSTRAINT "product_target_region_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "country"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "product_target_region" ADD CONSTRAINT "product_target_region_stateOrProvinceId_fkey" FOREIGN KEY ("stateOrProvinceId") REFERENCES "state_or_province"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "product_sales_support_material" ADD CONSTRAINT "product_sales_support_material_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;

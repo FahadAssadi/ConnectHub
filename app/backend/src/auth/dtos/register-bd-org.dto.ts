@@ -37,8 +37,8 @@ export class RegisterBdOrgDto {
   commonDetails: CommonCompanyDetailsDto;
 
   // ========== PROFESSIONAL DETAILS ==========
-  @IsUUID('4', { message: 'buisnessStructureId must be a valid UUID' })
-  buisnessStructureId: string;
+  @IsUUID('4', { message: 'businessStructureId must be a valid UUID' })
+  businessStructureId: string;
 
   @IsEnum(EmployeeCount, {
     message: `employeeCount must be one of: ${Object.values(EmployeeCount).join(', ')}`,

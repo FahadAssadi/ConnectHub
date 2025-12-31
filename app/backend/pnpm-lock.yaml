@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@countrystatecity/countries':
+        specifier: ^1.0.5
+        version: 1.0.5
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.9(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -370,6 +373,9 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
+
+  '@countrystatecity/countries@1.0.5':
+    resolution: {integrity: sha512-AsxLm46eYTnP+lLKKk8o2ShJslVX4pAh762Kjux/40sVBEVH152PSgevlBEUxRawNXrccCbA8CQYLAJj5s9Tyw==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -4179,6 +4185,8 @@ snapshots:
 
   '@colors/colors@1.5.0':
     optional: true
+
+  '@countrystatecity/countries@1.0.5': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:

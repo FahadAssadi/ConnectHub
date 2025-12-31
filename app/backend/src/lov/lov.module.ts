@@ -8,9 +8,10 @@ import { IndustrySpecialisationController } from './controllers/industry-special
 import { EngagementModelController } from './controllers/engagement-model.controller.js';
 import { IncentiveMethodController } from './controllers/incentive-method.controller.js';
 import { YearsOfExperienceController } from './controllers/years-of-experience.controller.js';
-import { BuisnessStructureController } from './controllers/buisness-structure.controller.js';
+import { BusinessStructureController } from './controllers/buisness-structure.controller.js';
 import { ToolPlatformController } from './controllers/tool-platform.controller.js';
 import { CertificationController } from './controllers/certification.controller.js';
+import { GeographicalController } from './controllers/geographical.controller.js';
 
 // Services
 import { IndustryCategoryService } from './services/industry-category.service.js';
@@ -19,9 +20,10 @@ import { IndustrySpecialisationService } from './services/industry-specialisatio
 import { EngagementModelService } from './services/engagement-model.service.js';
 import { IncentiveMethodService } from './services/incentive-method.service.js';
 import { YearsOfExperienceService } from './services/years-of-experience.service.js';
-import { BuisnessStructureService } from './services/buisness-structure.service.js';
+import { BusinessStructureService } from './services/buisness-structure.service.js';
 import { ToolPlatformService } from './services/tool-platform.service.js';
 import { CertificationService } from './services/certification.service.js';
+import { GeographicalService } from './services/geographical.service.js';
 
 @Module({
   imports: [DatabaseModule],
@@ -32,9 +34,10 @@ import { CertificationService } from './services/certification.service.js';
     EngagementModelService,
     IncentiveMethodService,
     YearsOfExperienceService,
-    BuisnessStructureService,
+    BusinessStructureService,
     ToolPlatformService,
     CertificationService,
+    GeographicalService,
   ],
   controllers: [
     IndustryCategoryController,
@@ -43,9 +46,10 @@ import { CertificationService } from './services/certification.service.js';
     EngagementModelController,
     IncentiveMethodController,
     YearsOfExperienceController,
-    BuisnessStructureController,
+    BusinessStructureController,
     ToolPlatformController,
     CertificationController,
+    GeographicalController,
   ],
   exports: [
     IndustryCategoryService,
@@ -54,9 +58,10 @@ import { CertificationService } from './services/certification.service.js';
     EngagementModelService,
     IncentiveMethodService,
     YearsOfExperienceService,
-    BuisnessStructureService,
+    BusinessStructureService,
     ToolPlatformService,
     CertificationService,
+    GeographicalService,
   ],
 })
 export class LovModule {}

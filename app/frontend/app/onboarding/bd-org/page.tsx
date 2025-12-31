@@ -9,27 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+
 import { ArrowLeft, Loader2 } from "lucide-react"
-
-interface Country {
-  id: string
-  name: string
-}
-
-interface State {
-  id: string
-  name: string
-}
-
-interface YearsOfExp {
-  id: string
-  range: string
-}
-
-interface BusinessStructure {
-  id: string
-  name: string
-}
 
 /**
  * Onboarding Step 2c: BD Partner Organization Profile Registration
@@ -38,19 +19,20 @@ interface BusinessStructure {
 export default function RegisterBdOrgPage() {
   const router = useRouter()
 
+
   // Lookup data
-  const [countries, setCountries] = useState<Country[]>([])
-  const [states, setStates] = useState<State[]>([])
-  const [yearsOfExp, setYearsOfExp] = useState<YearsOfExp[]>([])
-  const [businessStructures, setBusinessStructures] = useState<BusinessStructure[]>([])
+  const [countries, setCountries] = useState<Array<{ id: string; name: string }>>([])
+  const [states, setStates] = useState<Array<{ id: string; name: string }>>([])
+  const [yearsOfExp, setYearsOfExp] = useState<Array<{ id: string; range: string }>>([])
+  const [businessStructures, setBusinessStructures] = useState<Array<{ id: string; name: string }>>([])
 
   // Form data
   const [formData, setFormData] = useState({
-    // Company details
     companyName: "",
     businessRegNumber: "",
-    countryId: "",
-    stateOrProvinceId: "",
+    country: "",
+    countryIso2Code: "",
+    stateOrProvince: "",
     address: "",
     contactEmail: "",
     contactPhoneNumber: "",
@@ -58,8 +40,6 @@ export default function RegisterBdOrgPage() {
     linkedInProfileURL: "",
     yearFounded: undefined as number | undefined,
     companyDescription: "",
-
-    // Professional details
     businessStructureId: "",
     employeeCount: "",
     yearsOfExperienceId: "",
@@ -77,133 +57,164 @@ export default function RegisterBdOrgPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [countriesRes, yearsRes, structuresRes] = await Promise.all([
-          fetch("http://localhost:3000/api/countries", { credentials: "include" }),
-          fetch("http://localhost:3000/api/years-of-experience", { credentials: "include" }),
-          fetch("http://localhost:3000/api/business-structures", { credentials: "include" }),
-        ])
+        const yearsRes = await fetch("http://localhost:3000/lov/years-of-experience", { credentials: "include" });
+        const countriesRes = await fetch("http://localhost:3000/lov/geographical/countries", { credentials: "include" });
+        const structuresRes = await fetch("http://localhost:3000/lov/buisness-structures", { credentials: "include" });
 
         if (countriesRes.ok) {
-          const data = await countriesRes.json()
-          setCountries(data)
+          const countryData = await countriesRes.json();
+          setCountries(countryData);
         }
-
         if (yearsRes.ok) {
-          const data = await yearsRes.json()
-          setYearsOfExp(data)
+          const yearsData = await yearsRes.json();
+          setYearsOfExp(yearsData);
         }
-
         if (structuresRes.ok) {
-          const data = await structuresRes.json()
-          setBusinessStructures(data)
+          const structData = await structuresRes.json();
+          setBusinessStructures(structData);
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error)
+        console.error("Failed to fetch data:", error);
       } finally {
-        setIsLoadingData(false)
+        setIsLoadingData(false);
       }
-    }
+    };
+    fetchData();
+  }, []);
 
-    fetchData()
-  }, [])
-
-  // Fetch states when country changes
+  // Fetch states for Australia only
   useEffect(() => {
-    if (!formData.countryId) {
-      setStates([])
-      return
+    if (formData.countryIso2Code === "AU") {
+      setStates([
+        { id: "1", name: "Victoria" },
+        { id: "2", name: "New South Wales" },
+        { id: "3", name: "Queensland" },
+        { id: "4", name: "Western Australia" },
+        { id: "5", name: "South Australia" },
+        { id: "6", name: "Tasmania" },
+        { id: "7", name: "Australian Capital Territory" },
+        { id: "8", name: "Northern Territory" },
+      ]);
+    } else {
+      setStates([]);
+      setFormData((prev) => ({ ...prev, stateOrProvince: "" }));
     }
-
-    const fetchStates = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/countries/${formData.countryId}/states`,
-          { credentials: "include" }
-        )
-        if (response.ok) {
-          const data = await response.json()
-          setStates(data)
-        }
-      } catch (error) {
-        console.error("Failed to fetch states:", error)
-      }
-    }
-
-    fetchStates()
-  }, [formData.countryId])
+  }, [formData.countryIso2Code]);
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }))
-  }
+    }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    // Company details validation
-    if (!formData.companyName.trim()) newErrors.companyName = "Company name is required"
-    if (!formData.businessRegNumber.trim())
-      newErrors.businessRegNumber = "Business registration number is required"
-    if (!formData.countryId) newErrors.countryId = "Country is required"
-    if (!formData.stateOrProvinceId) newErrors.stateOrProvinceId = "State/Province is required"
-    if (!formData.address.trim()) newErrors.address = "Address is required"
-    if (!formData.contactEmail.trim()) newErrors.contactEmail = "Contact email is required"
-    if (!formData.contactPhoneNumber.trim()) newErrors.contactPhoneNumber = "Contact phone is required"
-
-    // Professional details validation
-    if (!formData.businessStructureId) newErrors.businessStructureId = "Business structure is required"
-    if (!formData.employeeCount) newErrors.employeeCount = "Employee count is required"
-    if (!formData.yearsOfExperienceId) newErrors.yearsOfExperienceId = "Years of experience is required"
-    if (!formData.ndaAgreed) newErrors.ndaAgreed = "You must agree to the NDA"
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    const newErrors: Record<string, string> = {};
+    if (!formData.companyName.trim()) newErrors.companyName = "Company name is required";
+    if (!formData.businessRegNumber.trim()) newErrors.businessRegNumber = "Business registration number is required";
+    if (!formData.country) newErrors.country = "Country is required";
+    if (formData.countryIso2Code === "AU" && !formData.stateOrProvince) newErrors.stateOrProvince = "State/Province is required";
+    if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.contactEmail.trim()) newErrors.contactEmail = "Contact email is required";
+    if (!formData.contactPhoneNumber.trim()) newErrors.contactPhoneNumber = "Contact phone is required";
+    if (!formData.businessStructureId) newErrors.businessStructureId = "Business structure is required";
+    if (!formData.employeeCount) newErrors.employeeCount = "Employee count is required";
+    if (!formData.yearsOfExperienceId) newErrors.yearsOfExperienceId = "Years of experience is required";
+    if (!formData.ndaAgreed) newErrors.ndaAgreed = "You must agree to the NDA";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateForm()) return
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    setIsLoading(true)
-    setErrors({})
+    setIsLoading(true);
+    setErrors({});
 
     try {
+      // Prepare payload with company details nested under commonDetails
+
+      const {
+        companyName,
+        businessRegNumber,
+        country,
+        countryIso2Code,
+        stateOrProvince,
+        address,
+        contactEmail,
+        contactPhoneNumber,
+        officialWebsite,
+        linkedInProfileURL,
+        yearFounded,
+        companyDescription,
+        businessStructureId,
+        employeeCount,
+        yearsOfExperienceId,
+        referralNetworkDescription,
+        availabilityHoursPerWeek,
+        existingClientBase,
+        ndaAgreed
+      } = formData;
+
+      const payload = {
+        commonDetails: {
+          companyName,
+          businessRegNumber,
+          country,
+          countryIso2Code,
+          stateOrProvince,
+          address,
+          contactPersonEmail: contactEmail,
+          contactPersonPhone: contactPhoneNumber,
+          officialWebsite,
+          linkedInProfileURL,
+          yearOfEstablishment: yearFounded,
+          description: companyDescription,
+        },
+        businessStructureId,
+        employeeCount,
+        yearsOfExperienceId,
+        referralNetworkDescription,
+        availabilityHoursPerWeek,
+        existingClientBase,
+        ndaAgreed,
+      };
+
       const response = await fetch("http://localhost:3000/registration/bd-org", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(formData),
-      })
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = await response.json();
         if (response.status === 409 || response.status === 400) {
-          setErrors({ submit: errorData.message || "Invalid data. Please try again." })
+          setErrors({ submit: errorData.message || "Invalid data. Please try again." });
         } else {
-          setErrors({ submit: "Failed to register. Please try again." })
+          setErrors({ submit: "Failed to register. Please try again." });
         }
       } else {
-        router.push("/dashboard")
+        router.push("/dashboard");
       }
     } catch (error) {
-      console.error("Submission error:", error)
-      setErrors({ submit: "An unexpected error occurred. Please try again." })
+      console.error("Submission error:", error);
+      setErrors({ submit: "An unexpected error occurred. Please try again." });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (isLoadingData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
       </div>
-    )
+    );
   }
 
   return (
@@ -258,14 +269,18 @@ export default function RegisterBdOrgPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="countryId">Country *</Label>
+                  <Label htmlFor="country">Country *</Label>
                   <select
-                    id="countryId"
-                    value={formData.countryId}
-                    onChange={(e) => handleInputChange("countryId", e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      errors.countryId ? "border-red-500" : "border-gray-300"
-                    }`}
+                    id="country"
+                    value={formData.countryIso2Code}
+                    onChange={(e) => {
+                      const selectedCountry = countries.find(c => c.id === e.target.value);
+                      handleInputChange("countryIso2Code", e.target.value);
+                      if (selectedCountry) {
+                        handleInputChange("country", selectedCountry.name);
+                      }
+                    }}
+                    className={`w-full px-3 py-2 border rounded-md ${errors.country ? "border-red-500" : "border-gray-300"}`}
                   >
                     <option value="">Select a country</option>
                     {countries.map((c) => (
@@ -274,29 +289,27 @@ export default function RegisterBdOrgPage() {
                       </option>
                     ))}
                   </select>
-                  {errors.countryId && <p className="text-sm text-red-500">{errors.countryId}</p>}
+                  {errors.country && <p className="text-sm text-red-500">{errors.country}</p>}
                 </div>
 
-                {states.length > 0 && (
+                {formData.countryIso2Code === "AU" && (
                   <div className="space-y-2">
-                    <Label htmlFor="stateOrProvinceId">State/Province *</Label>
+                    <Label htmlFor="stateOrProvince">State/Province *</Label>
                     <select
-                      id="stateOrProvinceId"
-                      value={formData.stateOrProvinceId}
-                      onChange={(e) => handleInputChange("stateOrProvinceId", e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        errors.stateOrProvinceId ? "border-red-500" : "border-gray-300"
-                      }`}
+                      id="stateOrProvince"
+                      value={formData.stateOrProvince}
+                      onChange={(e) => handleInputChange("stateOrProvince", e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-md ${errors.stateOrProvince ? "border-red-500" : "border-gray-300"}`}
                     >
                       <option value="">Select a state/province</option>
                       {states.map((s) => (
-                        <option key={s.id} value={s.id}>
+                        <option key={s.id} value={s.name}>
                           {s.name}
                         </option>
                       ))}
                     </select>
-                    {errors.stateOrProvinceId && (
-                      <p className="text-sm text-red-500">{errors.stateOrProvinceId}</p>
+                    {errors.stateOrProvince && (
+                      <p className="text-sm text-red-500">{errors.stateOrProvince}</p>
                     )}
                   </div>
                 )}

@@ -24,16 +24,20 @@ import { ArrowLeft, Loader2 } from "lucide-react"
  */
 export default function RegisterBdIndividualPage() {
   const router = useRouter()
+  
+  const [yearsOfExp, setYearsOfExp] = useState<Array<{ id: string; range: string }>>([])
   const [countries, setCountries] = useState<Array<{ id: string; name: string }>>([])
   const [states, setStates] = useState<Array<{ id: string; name: string }>>([])
-  const [yearsOfExp, setYearsOfExp] = useState<Array<{ id: string; range: string }>>([])
+
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    countryId: "",
-    stateOrProvinceId: "",
+    country: "",
+    countryIso2Code: "",
+    stateOrProvince: "",
     city: "",
     ndaAgreed: false,
     yearsOfExperienceId: "",
@@ -52,19 +56,18 @@ export default function RegisterBdIndividualPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [countriesRes, yearsRes] = await Promise.all([
-          fetch("http://localhost:3000/api/countries", { credentials: "include" }),
-          fetch("http://localhost:3000/api/years-of-experience", { credentials: "include" }),
-        ])
+        const yearsRes = await fetch("http://localhost:3000/lov/years-of-experience", { credentials: "include" });
+        const countriesRes = await fetch("http://localhost:3000/lov/geographical/countries", { credentials: "include" });
 
-        if (countriesRes.ok) {
-          const data = await countriesRes.json()
-          setCountries(data)
+        if (countriesRes) {
+          const countryData = await countriesRes.json()
+          setCountries(countryData);
+          console.log(countryData)
         }
 
         if (yearsRes.ok) {
-          const data = await yearsRes.json()
-          setYearsOfExp(data)
+          const yearsData = await yearsRes.json()
+          setYearsOfExp(yearsData)
         }
       } catch (error) {
         console.error("Failed to fetch data:", error)
@@ -73,33 +76,21 @@ export default function RegisterBdIndividualPage() {
       }
     }
 
+    
+    setStates([
+      { id: "1", name: "Victoria" },
+      { id: "2", name: "New South Wales" },
+      { id: "3", name: "Queensland" },
+      { id: "4", name: "Western Australia" },
+      { id: "5", name: "South Australia" },
+      { id: "6", name: "Tasmania" },
+      { id: "7", name: "Australian Capital Territory" },
+      { id: "8", name: "Northern Territory" },
+    ])
+
     fetchData()
   }, [])
 
-  // Fetch states when country changes
-  useEffect(() => {
-    if (!formData.countryId) {
-      setStates([])
-      return
-    }
-
-    const fetchStates = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/countries/${formData.countryId}/states`,
-          { credentials: "include" }
-        )
-        if (response.ok) {
-          const data = await response.json()
-          setStates(data)
-        }
-      } catch (error) {
-        console.error("Failed to fetch states:", error)
-      }
-    }
-
-    fetchStates()
-  }, [formData.countryId])
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData((prev) => ({
@@ -116,8 +107,8 @@ export default function RegisterBdIndividualPage() {
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required"
     if (!formData.email.trim()) newErrors.email = "Email is required"
     if (!formData.phone.trim()) newErrors.phone = "Phone is required"
-    if (!formData.countryId) newErrors.countryId = "Country is required"
-    if (!formData.stateOrProvinceId) newErrors.stateOrProvinceId = "State/Province is required"
+    if (!formData.country) newErrors.country = "Country is required"
+    if (!formData.stateOrProvince) newErrors.stateOrProvince = "State/Province is required"
     if (!formData.city.trim()) newErrors.city = "City is required"
     if (!formData.yearsOfExperienceId) newErrors.yearsOfExperienceId = "Years of experience is required"
     if (!formData.ndaAgreed) newErrors.ndaAgreed = "You must agree to the NDA"
@@ -128,7 +119,10 @@ export default function RegisterBdIndividualPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateForm()) return
+    if (!validateForm()) {
+      console.log("Validation failed", formData, errors)
+      return
+    }
 
     setIsLoading(true)
     setErrors({})
@@ -151,7 +145,7 @@ export default function RegisterBdIndividualPage() {
           setErrors({ submit: "Failed to register. Please try again." })
         }
       } else {
-        router.push("/dashboard")
+        router.push("/dashboard/bd-individual")
       }
     } catch (error) {
       console.error("Submission error:", error)
@@ -254,13 +248,19 @@ export default function RegisterBdIndividualPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="countryId">Country *</Label>
+                <Label htmlFor="country">Country *</Label>
                 <select
-                  id="countryId"
-                  value={formData.countryId}
-                  onChange={(e) => handleInputChange("countryId", e.target.value)}
+                  id="country"
+                  value={formData.countryIso2Code}
+                  onChange={(e) => {
+                    const selectedCountry = countries.find(c => c.id === e.target.value)
+                    handleInputChange("countryIso2Code", e.target.value)
+                    if (selectedCountry) {
+                      handleInputChange("country", selectedCountry.name)
+                    }
+                  }}
                   className={`w-full px-3 py-2 border rounded-md ${
-                    errors.countryId ? "border-red-500" : "border-gray-300"
+                    errors.country ? "border-red-500" : "border-gray-300"
                   }`}
                 >
                   <option value="">Select a country</option>
@@ -270,29 +270,29 @@ export default function RegisterBdIndividualPage() {
                     </option>
                   ))}
                 </select>
-                {errors.countryId && <p className="text-sm text-red-500">{errors.countryId}</p>}
+                {errors.country && <p className="text-sm text-red-500">{errors.country}</p>}
               </div>
 
-              {states.length > 0 && (
+              {(
                 <div className="space-y-2">
-                  <Label htmlFor="stateOrProvinceId">State/Province *</Label>
+                  <Label htmlFor="stateOrProvince">State/Province *</Label>
                   <select
-                    id="stateOrProvinceId"
-                    value={formData.stateOrProvinceId}
-                    onChange={(e) => handleInputChange("stateOrProvinceId", e.target.value)}
+                    id="stateOrProvince"
+                    value={formData.stateOrProvince}
+                    onChange={(e) => handleInputChange("stateOrProvince", e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md ${
-                      errors.stateOrProvinceId ? "border-red-500" : "border-gray-300"
+                      errors.stateOrProvince ? "border-red-500" : "border-gray-300"
                     }`}
                   >
                     <option value="">Select a state/province</option>
                     {states.map((s) => (
-                      <option key={s.id} value={s.id}>
+                      <option key={s.id} value={s.name}>
                         {s.name}
                       </option>
                     ))}
                   </select>
-                  {errors.stateOrProvinceId && (
-                    <p className="text-sm text-red-500">{errors.stateOrProvinceId}</p>
+                  {errors.stateOrProvince && (
+                    <p className="text-sm text-red-500">{errors.stateOrProvince}</p>
                   )}
                 </div>
               )}

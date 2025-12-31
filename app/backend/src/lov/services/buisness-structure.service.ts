@@ -1,38 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
-import { CreateBuisnessStructureDto, UpdateBuisnessStructureDto } from '../dtos/buisness-structure.dto.js';
+import { CreateBusinessStructureDto, UpdateBusinessStructureDto } from '../dtos/buisness-structure.dto.js';
 
 @Injectable()
-export class BuisnessStructureService {
+export class BusinessStructureService {
   constructor(private readonly db: DatabaseService) {}
 
-  async create(dto: CreateBuisnessStructureDto) {
-    return this.db.buisnessStructure.create({
+  async create(dto: CreateBusinessStructureDto) {
+    return this.db.businessStructure.create({
       data: { name: dto.name },
     });
   }
 
   async findAll() {
-    return this.db.buisnessStructure.findMany({
+    return this.db.businessStructure.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findById(id: string) {
-    return this.db.buisnessStructure.findUnique({
+    return this.db.businessStructure.findUnique({
       where: { id },
     });
   }
 
-  async update(id: string, dto: UpdateBuisnessStructureDto) {
-    return this.db.buisnessStructure.update({
+  async update(id: string, dto: UpdateBusinessStructureDto) {
+    return this.db.businessStructure.update({
       where: { id },
       data: { name: dto.name },
     });
   }
 
   async delete(id: string) {
-    return this.db.buisnessStructure.delete({
+    return this.db.businessStructure.delete({
       where: { id },
     });
   }

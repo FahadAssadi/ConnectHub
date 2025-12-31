@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
-import { UserType, ProfileStatus } from '../../../generated/prisma/client.js';
+import { UserType, ProfileStatus, EmployeeCount } from '../../../generated/prisma/client.js';
 import { RegisterCompanyDto, RegisterBdIndividualDto, RegisterBdOrgDto } from '../dtos/index.js';
 
 /**
@@ -10,6 +10,28 @@ import { RegisterCompanyDto, RegisterBdIndividualDto, RegisterBdOrgDto } from '.
 @Injectable()
 export class UserProfileService {
   constructor(private readonly db: DatabaseService) {}
+
+  /**
+   * Map employee count display value to enum value.
+   * Handles both display formats (e.g., "11-50") and enum values (e.g., "ELEVEN_TO_FIFTY").
+   */
+  private mapEmployeeCount(value: string): EmployeeCount {
+    const mappings: Record<string, EmployeeCount> = {
+      '1-10': EmployeeCount.ONE_TO_TEN,
+      'ONE_TO_TEN': EmployeeCount.ONE_TO_TEN,
+      '11-50': EmployeeCount.ELEVEN_TO_FIFTY,
+      'ELEVEN_TO_FIFTY': EmployeeCount.ELEVEN_TO_FIFTY,
+      '51-200': EmployeeCount.FIFTY_ONE_TO_TWO_HUNDRED,
+      'FIFTY_ONE_TO_TWO_HUNDRED': EmployeeCount.FIFTY_ONE_TO_TWO_HUNDRED,
+      '201-500': EmployeeCount.TWO_HUNDRED_ONE_TO_FIVE_HUNDRED,
+      'TWO_HUNDRED_ONE_TO_FIVE_HUNDRED': EmployeeCount.TWO_HUNDRED_ONE_TO_FIVE_HUNDRED,
+      '501-1000': EmployeeCount.FIVE_HUNDRED_ONE_TO_THOUSAND,
+      'FIVE_HUNDRED_ONE_TO_THOUSAND': EmployeeCount.FIVE_HUNDRED_ONE_TO_THOUSAND,
+      '1000+': EmployeeCount.OVER_THOUSAND,
+      'OVER_THOUSAND': EmployeeCount.OVER_THOUSAND,
+    };
+    return mappings[value] || EmployeeCount.ONE_TO_TEN;
+  }
 
   /**
    * Create an initial UserProfile for a newly signed-up user.
@@ -32,11 +54,97 @@ export class UserProfileService {
    * Check if a user already has a profile.
    *
    * @param userId - The user ID to check
-   * @returns The existing UserProfile or null
+   * @returns The existing UserProfile with all related data or null
    */
   async getUserProfile(userId: string) {
     return this.db.userProfile.findUnique({
       where: { userId },
+      include: {
+        companyProfile: {
+          include: {
+            commonDetails: true,
+            profileIndustries: {
+              include: {
+                industryCategory: true,
+                industrySubCategory: true,
+                industrySpecialisation: true,
+              },
+            },
+            profileEngagements: {
+              include: {
+                engagementModel: true,
+              },
+            },
+            profileTools: {
+              include: {
+                toolPlatform: true,
+              },
+            },
+            profileCertifications: {
+              include: {
+                certification: true,
+              },
+            },
+            products: true,
+          },
+        },
+        bdpartnerIndividualProfile: {
+          include: {
+            yearsOfExperience: true,
+            profileIndustries: {
+              include: {
+                industryCategory: true,
+                industrySubCategory: true,
+                industrySpecialisation: true,
+              },
+            },
+            profileEngagements: {
+              include: {
+                engagementModel: true,
+              },
+            },
+            profileTools: {
+              include: {
+                toolPlatform: true,
+              },
+            },
+            profileCertifications: {
+              include: {
+                certification: true,
+              },
+            },
+          },
+        },
+        bdpartnerOrganizationProfile: {
+          include: {
+            commonDetails: true,
+            businessStructure: true,
+            yearsOfExperience: true,
+            profileIndustries: {
+              include: {
+                industryCategory: true,
+                industrySubCategory: true,
+                industrySpecialisation: true,
+              },
+            },
+            profileEngagements: {
+              include: {
+                engagementModel: true,
+              },
+            },
+            profileTools: {
+              include: {
+                toolPlatform: true,
+              },
+            },
+            profileCertifications: {
+              include: {
+                certification: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -110,15 +218,15 @@ export class UserProfileService {
           data: {
             companyName: dto.commonDetails.companyName,
             businessRegNumber: dto.commonDetails.businessRegNumber,
-            registeredBuisnessName: dto.commonDetails.registeredBuisnessName,
-            countryOfRegistration: dto.commonDetails.countryOfRegistration,
-            registeredAddress: dto.commonDetails.registeredAddress,
-            contactPersonName: dto.commonDetails.contactPersonName,
-            contactPersonDesignation: dto.commonDetails.contactPersonDesignation,
+            registeredBuisnessName: dto.commonDetails.registeredBuisnessName || dto.commonDetails.companyName,
+            countryOfRegistration: dto.commonDetails.countryOfRegistration || dto.commonDetails.country || 'Unknown',
+            registeredAddress: dto.commonDetails.registeredAddress || dto.commonDetails.address || '',
+            contactPersonName: dto.commonDetails.contactPersonName || 'N/A',
+            contactPersonDesignation: dto.commonDetails.contactPersonDesignation || 'N/A',
             contactPersonEmail: dto.commonDetails.contactPersonEmail,
             contactPersonPhone: dto.commonDetails.contactPersonPhone,
-            websiteURL: dto.commonDetails.websiteURL,
-            linkedInURL: dto.commonDetails.linkedInURL,
+            websiteURL: dto.commonDetails.websiteURL || dto.commonDetails.officialWebsite,
+            linkedInURL: dto.commonDetails.linkedInURL || dto.commonDetails.linkedInProfileURL,
             logoURL: dto.commonDetails.logoURL,
             profileDeckURL: dto.commonDetails.profileDeckURL,
             yearOfEstablishment: dto.commonDetails.yearOfEstablishment,
@@ -146,6 +254,7 @@ export class UserProfileService {
       if (error instanceof ConflictException || error instanceof BadRequestException) {
         throw error;
       }
+      console.error('Error registering company profile:', error);
       throw new InternalServerErrorException(
         'Failed to register company profile. Please try again.',
       );
@@ -234,6 +343,7 @@ export class UserProfileService {
       if (error instanceof ConflictException || error instanceof BadRequestException) {
         throw error;
       }
+      console.error('Error registering BD partner individual profile:', error);
       throw new InternalServerErrorException(
         'Failed to register BD partner individual profile. Please try again.',
       );
@@ -260,7 +370,7 @@ export class UserProfileService {
 
     // Verify all required FK relationships exist
     const [businessStructure, yearsOfExp] = await Promise.all([
-      this.db.buisnessStructure.findUnique({ where: { id: dto.buisnessStructureId } }),
+      this.db.businessStructure.findUnique({ where: { id: dto.businessStructureId } }),
       this.db.yearsOfExperience.findUnique({ where: { id: dto.yearsOfExperienceId } }),
     ]);
 
@@ -304,20 +414,20 @@ export class UserProfileService {
           },
         });
 
-        // Create CommonCompanyDetails
+        // Create CommonCompanyDetails with field mapping
         const commonDetails = await tx.commonCompanyDetails.create({
           data: {
             companyName: dto.commonDetails.companyName,
             businessRegNumber: dto.commonDetails.businessRegNumber,
-            registeredBuisnessName: dto.commonDetails.registeredBuisnessName,
-            countryOfRegistration: dto.commonDetails.countryOfRegistration,
-            registeredAddress: dto.commonDetails.registeredAddress,
-            contactPersonName: dto.commonDetails.contactPersonName,
-            contactPersonDesignation: dto.commonDetails.contactPersonDesignation,
+            registeredBuisnessName: dto.commonDetails.registeredBuisnessName || dto.commonDetails.companyName,
+            countryOfRegistration: dto.commonDetails.countryOfRegistration || dto.commonDetails.country || 'Unknown',
+            registeredAddress: dto.commonDetails.registeredAddress || dto.commonDetails.address || '',
+            contactPersonName: dto.commonDetails.contactPersonName || 'N/A',
+            contactPersonDesignation: dto.commonDetails.contactPersonDesignation || 'N/A',
             contactPersonEmail: dto.commonDetails.contactPersonEmail,
             contactPersonPhone: dto.commonDetails.contactPersonPhone,
-            websiteURL: dto.commonDetails.websiteURL,
-            linkedInURL: dto.commonDetails.linkedInURL,
+            websiteURL: dto.commonDetails.websiteURL || dto.commonDetails.officialWebsite,
+            linkedInURL: dto.commonDetails.linkedInURL || dto.commonDetails.linkedInProfileURL,
             logoURL: dto.commonDetails.logoURL,
             profileDeckURL: dto.commonDetails.profileDeckURL,
             yearOfEstablishment: dto.commonDetails.yearOfEstablishment,
@@ -330,8 +440,8 @@ export class UserProfileService {
           data: {
             userProfileId: userProfile.id,
             commonDetailsId: commonDetails.id,
-            buisnessStructureId: dto.buisnessStructureId,
-            employeeCount: dto.employeeCount,
+            businessStructureId: dto.businessStructureId,
+            employeeCount: this.mapEmployeeCount(dto.employeeCount),
             yearsOfExperienceId: dto.yearsOfExperienceId,
             availabilityHoursPerWeek: dto.availabilityHoursPerWeek ? parseFloat(dto.availabilityHoursPerWeek.toString()) : null,
             referralNetworkDescription: dto.referralNetworkDescription,
@@ -350,6 +460,7 @@ export class UserProfileService {
       if (error instanceof ConflictException || error instanceof BadRequestException) {
         throw error;
       }
+      console.error('Error registering BD organization profile:', error);
       throw new InternalServerErrorException(
         'Failed to register BD partner organization profile. Please try again.',
       );

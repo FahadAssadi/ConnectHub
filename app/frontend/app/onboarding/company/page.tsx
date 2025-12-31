@@ -22,17 +22,14 @@ export default function RegisterCompanyPage() {
     commonDetails: {
       companyName: "",
       businessRegNumber: "",
-      registeredBuisnessName: "",
-      countryOfRegistrationId: "",
-      registeredAddress: "",
-      contactPersonName: "",
-      contactPersonDesignation: "",
+      country: "",
+      countryIso2Code: "",
+      stateOrProvince: "",
+      address: "",
       contactPersonEmail: "",
       contactPersonPhone: "",
-      websiteURL: "",
-      linkedInURL: "",
-      logoURL: "",
-      profileDeckURL: "",
+      officialWebsite: "",
+      linkedInProfileURL: "",
       yearOfEstablishment: undefined as number | undefined,
       description: "",
     },
@@ -47,7 +44,7 @@ export default function RegisterCompanyPage() {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/countries", {
+        const response = await fetch("http://localhost:3000/lov/geographical/countries", {
           credentials: "include",
         })
         if (response.ok) {
@@ -92,23 +89,20 @@ export default function RegisterCompanyPage() {
     if (!formData.commonDetails.businessRegNumber.trim()) {
       newErrors.businessRegNumber = "Business registration number is required"
     }
-    if (!formData.commonDetails.countryOfRegistrationId) {
-      newErrors.countryOfRegistrationId = "Country is required"
+    if (!formData.commonDetails.country) {
+      newErrors.country = "Country is required"
     }
-    if (!formData.commonDetails.registeredAddress.trim()) {
-      newErrors.registeredAddress = "Registered address is required"
-    }
-    if (!formData.commonDetails.contactPersonName.trim()) {
-      newErrors.contactPersonName = "Contact person name is required"
-    }
-    if (!formData.commonDetails.contactPersonDesignation.trim()) {
-      newErrors.contactPersonDesignation = "Designation is required"
+    if (!formData.commonDetails.address.trim()) {
+      newErrors.address = "Address is required"
     }
     if (!formData.commonDetails.contactPersonEmail.trim()) {
       newErrors.contactPersonEmail = "Contact email is required"
     }
     if (!formData.commonDetails.contactPersonPhone.trim()) {
       newErrors.contactPersonPhone = "Contact phone is required"
+    }
+    if (!formData.ndaAgreed) {
+      newErrors.ndaAgreed = "You must agree to the NDA"
     }
 
     setErrors(newErrors)
@@ -123,13 +117,47 @@ export default function RegisterCompanyPage() {
     setErrors({})
 
     try {
+      const {
+        companyName,
+        businessRegNumber,
+        country,
+        countryIso2Code,
+        stateOrProvince,
+        address,
+        contactPersonEmail,
+        contactPersonPhone,
+        officialWebsite,
+        linkedInProfileURL,
+        yearOfEstablishment,
+        description,
+      } = formData.commonDetails
+
+      const payload = {
+        commonDetails: {
+          companyName,
+          businessRegNumber,
+          country,
+          countryIso2Code,
+          stateOrProvince,
+          address,
+          contactPersonEmail,
+          contactPersonPhone,
+          officialWebsite,
+          linkedInProfileURL,
+          yearOfEstablishment,
+          description,
+        },
+        ndaAgreed: formData.ndaAgreed,
+        headOfficeLocation: formData.headOfficeLocation,
+      }
+
       const response = await fetch("http://localhost:3000/registration/company", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
