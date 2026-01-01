@@ -414,6 +414,23 @@ CREATE TABLE "product_preferred_certification" (
     CONSTRAINT "product_preferred_certification_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "expression_of_interest" (
+    "id" TEXT NOT NULL,
+    "bdPartnerIndividualProfileId" TEXT,
+    "bdPartnerOrganizationProfileId" TEXT,
+    "productId" TEXT NOT NULL,
+    "initiator" "EOIInitiator" NOT NULL,
+    "status" "EOIStatus" NOT NULL DEFAULT 'PENDING',
+    "message" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "expiresAt" TIMESTAMP(3),
+    "respondedAt" TIMESTAMP(3),
+
+    CONSTRAINT "expression_of_interest_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -609,6 +626,18 @@ CREATE INDEX "product_preferred_certification_productId_idx" ON "product_preferr
 -- CreateIndex
 CREATE UNIQUE INDEX "product_preferred_certification_productId_certificationId_key" ON "product_preferred_certification"("productId", "certificationId");
 
+-- CreateIndex
+CREATE INDEX "expression_of_interest_productId_idx" ON "expression_of_interest"("productId");
+
+-- CreateIndex
+CREATE INDEX "expression_of_interest_bdPartnerIndividualProfileId_idx" ON "expression_of_interest"("bdPartnerIndividualProfileId");
+
+-- CreateIndex
+CREATE INDEX "expression_of_interest_bdPartnerOrganizationProfileId_idx" ON "expression_of_interest"("bdPartnerOrganizationProfileId");
+
+-- CreateIndex
+CREATE INDEX "expression_of_interest_status_idx" ON "expression_of_interest"("status");
+
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -737,3 +766,12 @@ ALTER TABLE "product_preferred_certification" ADD CONSTRAINT "product_preferred_
 
 -- AddForeignKey
 ALTER TABLE "product_preferred_certification" ADD CONSTRAINT "product_preferred_certification_certificationId_fkey" FOREIGN KEY ("certificationId") REFERENCES "certification"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "expression_of_interest" ADD CONSTRAINT "expression_of_interest_bdPartnerIndividualProfileId_fkey" FOREIGN KEY ("bdPartnerIndividualProfileId") REFERENCES "bd_partner_individual_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "expression_of_interest" ADD CONSTRAINT "expression_of_interest_bdPartnerOrganizationProfileId_fkey" FOREIGN KEY ("bdPartnerOrganizationProfileId") REFERENCES "bd_partner_organization_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "expression_of_interest" ADD CONSTRAINT "expression_of_interest_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;

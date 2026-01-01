@@ -402,6 +402,7 @@ model BDPartnerIndividualProfile {
   profileEngagements ProfileEngagement[]
   profileTools ProfileTool[]
   profileCertifications ProfileCertification[]
+  expressionOfInterests ExpressionOfInterest[]
 
   @@index([userProfileId])
   @@map("bd_partner_individual_profile")
@@ -435,6 +436,7 @@ model BDPartnerOrganizationProfile {
   profileEngagements ProfileEngagement[]
   profileTools ProfileTool[]
   profileCertifications ProfileCertification[]
+  expressionOfInterests ExpressionOfInterest[]
 
   @@index([commonDetailsId])
   @@index([userProfileId])
@@ -588,6 +590,7 @@ model Product {
   productSalesSupportMaterials ProductSalesSupportMaterial[]
   productPreferredBDProfiles ProductPreferredBDProfile[]
   productPreferredCertifications ProductPreferredCertification[]
+  expressionOfInterests ExpressionOfInterest[]
   
   @@index([companyProfileId])
   @@index([status])
@@ -685,4 +688,40 @@ model ProductPreferredCertification {
   @@unique([productId, certificationId])
   @@index([productId])
   @@map("product_preferred_certification")
+}
+
+// ============================================
+// EXPRESSION OF INTEREST MODEL
+// ============================================
+
+model ExpressionOfInterest {
+  id String @id @default(cuid())
+  
+  // Who is expressing interest
+  bdPartnerIndividualProfileId String?
+  bdPartnerIndividualProfile BDPartnerIndividualProfile? @relation(fields: [bdPartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  
+  bdPartnerOrganizationProfileId String?
+  bdPartnerOrganizationProfile BDPartnerOrganizationProfile? @relation(fields: [bdPartnerOrganizationProfileId], references: [id], onDelete: Cascade)
+  
+  // What they're interested in
+  productId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // EOI Details
+  initiator EOIInitiator // BD_PARTNER or COMPANY
+  status EOIStatus @default(PENDING)
+  message String? @db.Text
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime?
+  respondedAt DateTime?
+  
+  @@index([productId])
+  @@index([bdPartnerIndividualProfileId])
+  @@index([bdPartnerOrganizationProfileId])
+  @@index([status])
+  @@map("expression_of_interest")
 }
