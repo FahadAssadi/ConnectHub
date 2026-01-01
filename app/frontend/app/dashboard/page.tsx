@@ -16,12 +16,10 @@ export default function Dashboard() {
 
         const userData = await userDataasda.json();
         
-        if (userData.type === "BD_PARTNER_INDIVIDUAL"){
-            router.push('/dashboard/bd-individual');
+        if (userData.type === "BD_PARTNER_INDIVIDUAL" || userData.type === "BD_PARTNER_ORGANIZATION"){
+            router.push('/dashboard/bd-partner');
         } else if (userData.type === "COMPANY"){
             router.push('/dashboard/company');
-        } else if (userData.type === "BD_PARTNER_ORGANIZATION") {
-            router.push('/dashboard/bd-organization');
         } else {
             throw new Error("Unknown user type");
         }
