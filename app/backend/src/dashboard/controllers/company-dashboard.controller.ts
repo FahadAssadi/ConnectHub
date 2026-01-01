@@ -8,10 +8,10 @@ export class CompanyDashboardController {
     private readonly companyDashboardService: CompanyDashboardService,
   ) {}
 
-  @Get(':companyProfileId/summary')
+  @Get('summary')
   @HttpCode(HttpStatus.OK)
   async getSummary(@NestRequest() req: any): Promise<CompanyDashboardMetricsDto> {
-    const companyProfileId = await req.user?.companyProfile?.id;
+    const companyProfileId = req.user?.companyProfile?.id;
 
     return this.companyDashboardService.getCompanyDashboardMetrics(
       companyProfileId,
