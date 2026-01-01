@@ -39,7 +39,7 @@ export function ProductListItem({ product, onDuplicate, onDelete }: ProductListI
           <div className="flex-1 space-y-3">
             <div className="flex items-start justify-between">
               <div>
-                <Link href={`/products/${product.id}`} className="hover:underline">
+                <Link href={`/dashboard/company/products/${product.id}`} className="hover:underline">
                   <h3 className="text-lg font-semibold">{product.name}</h3>
                 </Link>
                 <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{product.shortDescription}</p>
@@ -59,13 +59,13 @@ export function ProductListItem({ product, onDuplicate, onDelete }: ProductListI
               <p className="text-xs text-muted-foreground">Updated {product.lastUpdated}</p>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/products/${product.id}`}>
+                  <Link href={`/dashboard/company/products/${product.id}`}>
                     <Eye className="mr-2 h-4 w-4" />
                     View
                   </Link>
                 </Button>
                 <Button variant="default" size="sm" asChild>
-                  <Link href={`/products/${product.id}/edit`}>
+                  <Link href={`/dashboard/company/products/${product.id}/edit`}>
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
                   </Link>

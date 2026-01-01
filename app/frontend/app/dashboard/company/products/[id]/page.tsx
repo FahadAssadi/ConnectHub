@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProductDetailOverview, type ProductDetailData } from "../(components)/product-detail-overview"
@@ -10,76 +12,150 @@ import {
   type PreferredProfile,
   type PreferredCertification,
 } from "../(components)/product-targeting"
-import { Edit, ArrowLeft } from "lucide-react"
+import { Edit, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-// Mock data - replace with actual data fetching
-const mockProduct: ProductDetailData = {
-  id: "1",
-  name: "CloudSync Pro",
-  type: "product",
-  status: "approved",
-  shortDescription: "Enterprise-grade cloud synchronization solution for seamless data management",
-  detailedDescription: `CloudSync Pro is a comprehensive cloud synchronization platform designed for enterprise organizations that need reliable, secure, and scalable data management across multiple cloud platforms.
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"
 
-Key Features:
-• Real-time synchronization across AWS, Azure, and Google Cloud
-• Advanced conflict resolution algorithms
-• Enterprise-grade security with end-to-end encryption
-• Detailed audit logs and compliance reporting
-• Custom workflow automation
-• 24/7 dedicated support
-
-Perfect for organizations managing distributed teams and multi-cloud infrastructure.`,
-  imageURL: "/cloud-sync-technology.jpg",
-  paymentModel: "Commission Based",
-  indicativeIncentive: "15-20% commission per sale",
-  salesTrainingAvailable: true,
-  engagementMethod: "Direct Sales Partnership",
-  preferredYearsOfExperience: "3-5 years",
+function formatPaymentModel(model: string): string {
+  return model
+    .split("_")
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(" ")
 }
 
-const targetIndustries: TargetIndustry[] = [
-  { category: "Technology", subCategory: "Software Development" },
-  { category: "Financial Services", subCategory: "Banking" },
-  { category: "Healthcare", subCategory: "Health Tech" },
-]
-
-const targetRegions: TargetRegion[] = [{ name: "North America" }, { name: "Europe" }, { name: "Asia Pacific" }]
-
-const preferredProfiles: PreferredProfile[] = [
-  { specialisation: "Cloud Infrastructure" },
-  { specialisation: "Enterprise Software" },
-  { specialisation: "SaaS Solutions" },
-]
-
-const preferredCertifications: PreferredCertification[] = [
-  { name: "AWS Solutions Architect" },
-  { name: "Azure Administrator" },
-  { name: "Salesforce Certified" },
-]
-
-const mockApplications = [
-  { id: "1", bdPartner: "John Smith", status: "pending", date: "2 days ago" },
-  { id: "2", bdPartner: "Sarah Johnson", status: "approved", date: "1 week ago" },
-  { id: "3", bdPartner: "Mike Chen", status: "under_review", date: "2 weeks ago" },
-]
-
 export default function ProductDetailPage() {
+  const params = useParams()
+  const productId = params.id as string
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [product, setProduct] = useState<ProductDetailData | null>(null)
+  const [targetIndustries, setTargetIndustries] = useState<TargetIndustry[]>([])
+  const [targetRegions, setTargetRegions] = useState<TargetRegion[]>([])
+  const [preferredProfiles, setPreferredProfiles] = useState<PreferredProfile[]>([])
+  const [preferredCertifications, setPreferredCertifications] = useState<PreferredCertification[]>([])
+  const [applications, setApplications] = useState<any[]>([])
+
+  useEffect(() => {
+    async function fetchProductDetails() {
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}`, {
+          credentials: "include",
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch product")
+
+        const data = await res.json()
+
+        // Map API response to component format
+        const mappedProduct: ProductDetailData = {
+          id: data.id,
+          name: data.name,
+          type: data.type.toLowerCase(),
+          status: data.status.toLowerCase(),
+          shortDescription: data.shortDescription,
+          detailedDescription: data.detailedDescription,
+          imageURL: data.imageURL || undefined,
+          paymentModel: formatPaymentModel(data.paymentModel),
+          indicativeIncentive: data.indicativeIncentive || undefined,
+          salesTrainingAvailable: data.salesTrainingAvailable,
+          engagementMethod: data.engagementMethod?.name || undefined,
+          preferredYearsOfExperience: data.preferredYearsOfExperience?.yearsRange || undefined,
+        }
+
+        setProduct(mappedProduct)
+
+        // Map target industries
+        if (data.productTargetCustomerIndustries) {
+          const industries: TargetIndustry[] = data.productTargetCustomerIndustries.map((item: any) => ({
+            category: item.industryCategory?.name || "",
+            subCategory: item.industrySubCategory?.name || "",
+          }))
+          setTargetIndustries(industries)
+        }
+
+        // Map target regions
+        if (data.productTargetRegions) {
+          const regions: TargetRegion[] = data.productTargetRegions.map((item: any) => ({
+            name: item.region?.name || "",
+          }))
+          setTargetRegions(regions)
+        }
+
+        // Map preferred profiles
+        if (data.productPreferredBDProfiles) {
+          const profiles: PreferredProfile[] = data.productPreferredBDProfiles.map((item: any) => ({
+            specialisation: item.industrySpecialisation?.name || "",
+          }))
+          setPreferredProfiles(profiles)
+        }
+
+        // Map preferred certifications
+        if (data.productPreferredCertifications) {
+          const certs: PreferredCertification[] = data.productPreferredCertifications.map((item: any) => ({
+            name: item.certification?.name || "",
+          }))
+          setPreferredCertifications(certs)
+        }
+
+        // TODO: Fetch EOI applications for this product
+        // For now, set empty array
+        setApplications([])
+
+        setError(null)
+      } catch (err) {
+        console.error("Error fetching product:", err)
+        setError("Failed to load product details")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (productId) {
+      fetchProductDetails()
+    }
+  }, [productId])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="ml-4 text-lg">Loading product details...</p>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-red-600">{error || "Product not found"}</p>
+          <Button asChild className="mt-4">
+            <Link href="/dashboard/company/products">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Products
+            </Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button variant="ghost" asChild>
-            <Link href="/products">
+            <Link href="/dashboard/company/products">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Products
             </Link>
           </Button>
           <Button asChild>
-            <Link href={`/products/${mockProduct.id}/edit`}>
+            <Link href={`/dashboard/company/products/${product.id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit Product
             </Link>
@@ -90,11 +166,11 @@ export default function ProductDetailPage() {
           <TabsList className="grid w-full grid-cols-3 lg:w-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="targeting">Targeting</TabsTrigger>
-            <TabsTrigger value="applications">Applications ({mockApplications.length})</TabsTrigger>
+            <TabsTrigger value="applications">Applications ({applications.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <ProductDetailOverview product={mockProduct} />
+            <ProductDetailOverview product={product} />
           </TabsContent>
 
           <TabsContent value="targeting" className="space-y-6">
@@ -113,17 +189,21 @@ export default function ProductDetailPage() {
                 <CardDescription>BD Partners who have applied to sell this product</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockApplications.map((app) => (
-                    <div key={app.id} className="flex items-center justify-between rounded-lg border border-border p-4">
-                      <div>
-                        <p className="font-medium">{app.bdPartner}</p>
-                        <p className="text-xs text-muted-foreground">Applied {app.date}</p>
+                {applications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No applications yet</p>
+                ) : (
+                  <div className="space-y-4">
+                    {applications.map((app) => (
+                      <div key={app.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                        <div>
+                          <p className="font-medium">{app.bdPartner}</p>
+                          <p className="text-xs text-muted-foreground">Applied {app.date}</p>
+                        </div>
+                        <Badge variant="outline">{app.status.replace("_", " ")}</Badge>
                       </div>
-                      <Badge variant="outline">{app.status.replace("_", " ")}</Badge>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
