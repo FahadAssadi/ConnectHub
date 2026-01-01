@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Request as NestRequest } from '@nestjs/common';
 import { CompanyDashboardService } from '../services/company-dashboard.service.js';
 import { CompanyDashboardMetricsDto } from '../dtos/company-dashboard.dto.js';
 
@@ -10,9 +10,9 @@ export class CompanyDashboardController {
 
   @Get(':companyProfileId/summary')
   @HttpCode(HttpStatus.OK)
-  async getSummary(
-    @Param('companyProfileId') companyProfileId: string,
-  ): Promise<CompanyDashboardMetricsDto> {
+  async getSummary(@NestRequest() req: any): Promise<CompanyDashboardMetricsDto> {
+    const companyProfileId = await req.user?.companyProfile?.id;
+
     return this.companyDashboardService.getCompanyDashboardMetrics(
       companyProfileId,
     );
