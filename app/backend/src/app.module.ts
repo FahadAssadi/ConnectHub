@@ -5,9 +5,10 @@ import { auth } from './lib/auth.js';
 import { AppAuthModule } from './auth/auth.module.js';
 import { LovModule } from './lov/lov.module.js';
 import { ProductModule } from './products/product.module.js';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 
 @Module({
-  imports: [DatabaseModule, AuthModule.forRoot({ auth }), AppAuthModule, LovModule, ProductModule],
+  imports: [DatabaseModule, AuthModule.forRoot({ auth }), AppAuthModule, LovModule, ProductModule, DashboardModule],
   controllers: [],
   providers: [],
 })
