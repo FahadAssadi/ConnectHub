@@ -145,7 +145,7 @@ export default function RegisterBdIndividualPage() {
           setErrors({ submit: "Failed to register. Please try again." })
         }
       } else {
-        router.push("/dashboard/bd-individual")
+        router.push("/dashboard/bd-partner")
       }
     } catch (error) {
       console.error("Submission error:", error)

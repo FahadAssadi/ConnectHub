@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { EOIInitiator } from '../../../generated/prisma/enums.js';
 
 export class CreateEOIDto {
@@ -6,19 +6,13 @@ export class CreateEOIDto {
   @IsUUID()
   productId: string;
 
-  @ValidateIf((o) => !o.bdPartnerOrganizationProfileId)
   @IsNotEmpty()
   @IsUUID()
-  bdPartnerIndividualProfileId?: string;
+  bdPartnerProfileId: string;
 
-  @ValidateIf((o) => !o.bdPartnerIndividualProfileId)
-  @IsNotEmpty()
-  @IsUUID()
-  bdPartnerOrganizationProfileId?: string;
-
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(EOIInitiator)
-  initiator: EOIInitiator;
+  initiator?: EOIInitiator = EOIInitiator.BD_PARTNER;
 
   @IsOptional()
   @IsString()

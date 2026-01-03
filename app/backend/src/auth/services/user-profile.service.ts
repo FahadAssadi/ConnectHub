@@ -263,7 +263,7 @@ export class UserProfileService {
 
   /**
    * Register a BD Partner Individual profile.
-   * Atomically creates/updates UserProfile and BDPartnerIndividualProfile.
+   * Atomically creates/updates UserProfile and bdpartnerIndividualProfile.
    *
    * @param userId - The authenticated user ID
    * @param dto - BD Partner Individual registration data
@@ -311,7 +311,7 @@ export class UserProfileService {
           },
         });
 
-        // Create BDPartnerIndividualProfile
+        // Create bDPartnerIndividualProfile
         const bdProfile = await tx.bDPartnerIndividualProfile.create({
           data: {
             userProfileId: userProfile.id,

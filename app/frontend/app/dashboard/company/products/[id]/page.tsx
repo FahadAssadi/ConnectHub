@@ -38,6 +38,7 @@ export default function ProductDetailPage() {
   const [preferredProfiles, setPreferredProfiles] = useState<PreferredProfile[]>([])
   const [preferredCertifications, setPreferredCertifications] = useState<PreferredCertification[]>([])
   const [applications, setApplications] = useState<any[]>([])
+  const [applicationsLoading, setApplicationsLoading] = useState(false)
 
   useEffect(() => {
     async function fetchProductDetails() {
@@ -114,8 +115,28 @@ export default function ProductDetailPage() {
       }
     }
 
+    async function fetchApplications(productId: string) {
+      try {
+        setApplicationsLoading(true)
+        const res = await fetch(`${API_BASE}/eoi/product/${productId}`, {
+          credentials: "include",
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch applications")
+
+        const data = await res.json()
+        setApplications(data.data || [])
+      } catch (err) {
+        console.error("Error fetching applications:", err)
+        setApplications([])
+      } finally {
+        setApplicationsLoading(false)
+      }
+    }
+
     if (productId) {
       fetchProductDetails()
+      fetchApplications(productId)
     }
   }, [productId])
 
@@ -189,19 +210,42 @@ export default function ProductDetailPage() {
                 <CardDescription>BD Partners who have applied to sell this product</CardDescription>
               </CardHeader>
               <CardContent>
-                {applications.length === 0 ? (
+                {applicationsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mr-2" />
+                    <p className="text-sm text-muted-foreground">Loading applications...</p>
+                  </div>
+                ) : applications.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">No applications yet</p>
                 ) : (
                   <div className="space-y-4">
-                    {applications.map((app) => (
-                      <div key={app.id} className="flex items-center justify-between rounded-lg border border-border p-4">
-                        <div>
-                          <p className="font-medium">{app.bdPartner}</p>
-                          <p className="text-xs text-muted-foreground">Applied {app.date}</p>
+                    {applications.map((app) => {
+                      const bdPartnerName = app.bdPartnerIndividualProfile
+                        ? `${app.bdPartnerIndividualProfile.firstName} ${app.bdPartnerIndividualProfile.lastName}`
+                        : app.bdPartnerOrganizationProfile?.commonDetails?.companyName || "Unknown Partner"
+                      
+                      const bdPartnerEmail = app.bdPartnerIndividualProfile?.email || 
+                        app.bdPartnerOrganizationProfile?.commonDetails?.contactPersonEmail || 
+                        "No email provided"
+
+                      return (
+                        <div key={app.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                          <div className="flex-1">
+                            <p className="font-medium">{bdPartnerName}</p>
+                            <p className="text-xs text-muted-foreground">{bdPartnerEmail}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Applied {new Date(app.createdAt).toLocaleDateString()}
+                            </p>
+                            {app.message && (
+                              <p className="text-sm text-muted-foreground mt-1 italic">"{app.message}"</p>
+                            )}
+                          </div>
+                          <Badge variant="outline" className="ml-4 shrink-0">
+                            {app.status.replace(/_/g, " ")}
+                          </Badge>
                         </div>
-                        <Badge variant="outline">{app.status.replace("_", " ")}</Badge>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </CardContent>

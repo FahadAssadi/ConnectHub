@@ -25,7 +25,7 @@ enum EnglishFluency {
 
 /**
  * DTO for registering a BD Partner Individual profile.
- * Combines BDPartnerIndividualProfile personal and professional details.
+ * Combines bdpartnerIndividualProfile personal and professional details.
  * Must be called by an authenticated user (via AuthGuard).
  */
 export class RegisterBdIndividualDto {

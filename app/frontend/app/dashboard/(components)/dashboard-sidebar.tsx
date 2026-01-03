@@ -3,7 +3,6 @@
 import type * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Building2, Package, FileText, Settings, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -17,55 +16,32 @@ export interface NavItem {
   disabled?: boolean
 }
 
-const navItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Company Profile",
-    href: "/dashboard/company/profile",
-    icon: Building2,
-  },
-  {
-    title: "Products",
-    href: "/dashboard/company/products",
-    icon: Package,
-  },
-  {
-    title: "Applications",
-    href: "/dashboard/company/applications",
-    icon: FileText,
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
-]
-
 interface AppSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  companyName?: string
-  companyLogo?: string
+  name?: string
+  logo?: string
+  navItems: NavItem[]
+  userInfo?: {
+    name: string
+    email: string
+  }
 }
 
-export function AppSidebar({ className, companyName = "Acme Corp", companyLogo, ...props }: AppSidebarProps) {
+export function AppSidebar({ className, name = "Acme Corp", logo, navItems, userInfo, ...props }: AppSidebarProps) {
   const pathname = usePathname()
 
   return (
     <div className={cn("flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar", className)} {...props}>
-      {/* Logo and Company Header */}
+      {/* Logo and Name Header */}
       <div className="flex h-14 items-center border-b border-sidebar-border px-4">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-            {companyLogo ? (
-              <img src={companyLogo || "/placeholder.svg"} alt={companyName} className="h-6 w-6" />
+            {logo ? (
+              <img src={logo} alt={name} className="h-6 w-6" />
             ) : (
-              <Building2 className="h-5 w-5" />
+              <div className="h-5 w-5 rounded-sm bg-sidebar-primary-foreground/20" />
             )}
           </div>
-          <span className="text-sm">{companyName}</span>
+          <span className="text-sm truncate">{name}</span>
         </Link>
       </div>
 
@@ -105,20 +81,22 @@ export function AppSidebar({ className, companyName = "Acme Corp", companyLogo, 
       </ScrollArea>
 
       {/* User Section */}
-      <div className="border-t border-sidebar-border p-4">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent">
-            <User className="h-4 w-4" />
-          </div>
-          <div className="flex flex-1 flex-col items-start text-left">
-            <span className="text-xs font-medium">John Doe</span>
-            <span className="text-xs text-sidebar-foreground/60">john@acme.com</span>
-          </div>
-        </Button>
-      </div>
+      {userInfo && (
+        <div className="border-t border-sidebar-border p-4">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent">
+              <span className="text-xs font-semibold">{userInfo.name.charAt(0).toUpperCase()}</span>
+            </div>
+            <div className="flex flex-1 flex-col items-start text-left min-w-0">
+              <span className="text-xs font-medium truncate">{userInfo.name}</span>
+              <span className="text-xs text-sidebar-foreground/60 truncate">{userInfo.email}</span>
+            </div>
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

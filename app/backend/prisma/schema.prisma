@@ -243,7 +243,7 @@ model YearsOfExperience {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  bdpartnerIndividualProfiles BDPartnerIndividualProfile[]
+  bdpartnerIndividualProfiles bdpartnerIndividualProfile[]
   bdpartnerOrganizationProfiles BDPartnerOrganizationProfile[]
   products Product[]
 
@@ -300,7 +300,7 @@ model UserProfile {
   updatedAt DateTime        @updatedAt
 
   companyProfile CompanyProfile?
-  bdpartnerIndividualProfile BDPartnerIndividualProfile?
+  bdpartnerIndividualProfile bdpartnerIndividualProfile?
   bdpartnerOrganizationProfile BDPartnerOrganizationProfile?
 
   @@index([userId])
@@ -365,7 +365,7 @@ model CompanyProfile {
   @@map("company_profile")
 }
 
-model BDPartnerIndividualProfile {
+model bdpartnerIndividualProfile {
   id            String   @id @default(cuid())
   userProfileId String   @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
@@ -454,7 +454,7 @@ model ProfileIndustry {
   companyProfileId            String?
   companyProfile              CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
   bdpartnerIndividualProfileId String?
-  bdpartnerIndividualProfile   BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfile   bdpartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
   bdpartnerOrganizationProfileId String?
   bdpartnerOrganizationProfile   BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
 
@@ -485,7 +485,7 @@ model ProfileEngagement {
   companyProfileId                String?
   companyProfile                  CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
   bdpartnerIndividualProfileId    String?
-  bdpartnerIndividualProfile      BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfile      bdpartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
   bdpartnerOrganizationProfileId  String?
   bdpartnerOrganizationProfile    BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
   
@@ -511,7 +511,7 @@ model ProfileTool {
   companyProfileId                String?
   companyProfile                  CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
   bdpartnerIndividualProfileId    String?
-  bdpartnerIndividualProfile      BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfile      bdpartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
   bdpartnerOrganizationProfileId  String?
   bdpartnerOrganizationProfile    BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
   
@@ -537,7 +537,7 @@ model ProfileCertification {
   companyProfileId                String?
   companyProfile                  CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
   bdpartnerIndividualProfileId    String?
-  bdpartnerIndividualProfile      BDPartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfile      bdpartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
   bdpartnerOrganizationProfileId  String?
   bdpartnerOrganizationProfile    BDPartnerOrganizationProfile? @relation(fields: [bdpartnerOrganizationProfileId], references: [id], onDelete: Cascade)
   
@@ -698,8 +698,8 @@ model ExpressionOfInterest {
   id String @id @default(cuid())
   
   // Who is expressing interest
-  bdPartnerIndividualProfileId String?
-  bdPartnerIndividualProfile BDPartnerIndividualProfile? @relation(fields: [bdPartnerIndividualProfileId], references: [id], onDelete: Cascade)
+  bdpartnerIndividualProfileId String?
+  bdpartnerIndividualProfile bdpartnerIndividualProfile? @relation(fields: [bdpartnerIndividualProfileId], references: [id], onDelete: Cascade)
   
   bdPartnerOrganizationProfileId String?
   bdPartnerOrganizationProfile BDPartnerOrganizationProfile? @relation(fields: [bdPartnerOrganizationProfileId], references: [id], onDelete: Cascade)
@@ -720,7 +720,7 @@ model ExpressionOfInterest {
   respondedAt DateTime?
   
   @@index([productId])
-  @@index([bdPartnerIndividualProfileId])
+  @@index([bdpartnerIndividualProfileId])
   @@index([bdPartnerOrganizationProfileId])
   @@index([status])
   @@map("expression_of_interest")

@@ -417,7 +417,7 @@ CREATE TABLE "product_preferred_certification" (
 -- CreateTable
 CREATE TABLE "expression_of_interest" (
     "id" TEXT NOT NULL,
-    "bdPartnerIndividualProfileId" TEXT,
+    "bdpartnerIndividualProfileId" TEXT,
     "bdPartnerOrganizationProfileId" TEXT,
     "productId" TEXT NOT NULL,
     "initiator" "EOIInitiator" NOT NULL,
@@ -630,7 +630,7 @@ CREATE UNIQUE INDEX "product_preferred_certification_productId_certificationId_k
 CREATE INDEX "expression_of_interest_productId_idx" ON "expression_of_interest"("productId");
 
 -- CreateIndex
-CREATE INDEX "expression_of_interest_bdPartnerIndividualProfileId_idx" ON "expression_of_interest"("bdPartnerIndividualProfileId");
+CREATE INDEX "expression_of_interest_bdpartnerIndividualProfileId_idx" ON "expression_of_interest"("bdpartnerIndividualProfileId");
 
 -- CreateIndex
 CREATE INDEX "expression_of_interest_bdPartnerOrganizationProfileId_idx" ON "expression_of_interest"("bdPartnerOrganizationProfileId");
@@ -768,7 +768,7 @@ ALTER TABLE "product_preferred_certification" ADD CONSTRAINT "product_preferred_
 ALTER TABLE "product_preferred_certification" ADD CONSTRAINT "product_preferred_certification_certificationId_fkey" FOREIGN KEY ("certificationId") REFERENCES "certification"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "expression_of_interest" ADD CONSTRAINT "expression_of_interest_bdPartnerIndividualProfileId_fkey" FOREIGN KEY ("bdPartnerIndividualProfileId") REFERENCES "bd_partner_individual_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "expression_of_interest" ADD CONSTRAINT "expression_of_interest_bdpartnerIndividualProfileId_fkey" FOREIGN KEY ("bdpartnerIndividualProfileId") REFERENCES "bd_partner_individual_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "expression_of_interest" ADD CONSTRAINT "expression_of_interest_bdPartnerOrganizationProfileId_fkey" FOREIGN KEY ("bdPartnerOrganizationProfileId") REFERENCES "bd_partner_organization_profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;

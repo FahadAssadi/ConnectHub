@@ -21,30 +21,15 @@ export class EOIService {
   async create(createEOIDto: CreateEOIDto): Promise<EOIResponseDto> {
     const {
       productId,
-      bdPartnerIndividualProfileId,
-      bdPartnerOrganizationProfileId,
+      bdPartnerProfileId,
       initiator,
       message,
       expiresAt,
     } = createEOIDto;
 
-    // Validate that exactly one BD partner profile is provided
-    if (
-      !bdPartnerIndividualProfileId &&
-      !bdPartnerOrganizationProfileId
-    ) {
-      throw new BadRequestException(
-        'Either bdPartnerIndividualProfileId or bdPartnerOrganizationProfileId must be provided',
-      );
-    }
-
-    if (
-      bdPartnerIndividualProfileId &&
-      bdPartnerOrganizationProfileId
-    ) {
-      throw new BadRequestException(
-        'Only one of bdPartnerIndividualProfileId or bdPartnerOrganizationProfileId can be provided',
-      );
+    // Validate required fields
+    if (!bdPartnerProfileId) {
+      throw new BadRequestException('bdPartnerProfileId is required');
     }
 
     // Verify product exists
@@ -57,31 +42,31 @@ export class EOIService {
       throw new NotFoundException(`Product with ID ${productId} not found`);
     }
 
-    if (product.status !== 'APPROVED') {
-      throw new BadRequestException(
-        'EOI can only be created for approved products',
-      );
-    }
+    // if (product.status !== 'APPROVED') {
+    //   throw new BadRequestException(
+    //     'EOI can only be created for approved products',
+    //   );
+    // }
 
-    // Verify BD partner profile exists
-    if (bdPartnerIndividualProfileId) {
-      const profile = await this.db.bDPartnerIndividualProfile.findUnique({
-        where: { id: bdPartnerIndividualProfileId },
-      });
-      if (!profile) {
-        throw new NotFoundException(
-          `BD Partner Individual Profile with ID ${bdPartnerIndividualProfileId} not found`,
-        );
-      }
-    }
+    // Determine if profile is individual or organization
+    let bdPartnerIndividualProfileId: string | null = null;
+    let bdPartnerOrganizationProfileId: string | null = null;
 
-    if (bdPartnerOrganizationProfileId) {
-      const profile = await this.db.bDPartnerOrganizationProfile.findUnique({
-        where: { id: bdPartnerOrganizationProfileId },
+    const individualProfile = await this.db.bDPartnerIndividualProfile.findUnique({
+      where: { id: bdPartnerProfileId },
+    });
+
+    if (individualProfile) {
+      bdPartnerIndividualProfileId = bdPartnerProfileId;
+    } else {
+      const orgProfile = await this.db.bDPartnerOrganizationProfile.findUnique({
+        where: { id: bdPartnerProfileId },
       });
-      if (!profile) {
+      if (orgProfile) {
+        bdPartnerOrganizationProfileId = bdPartnerProfileId;
+      } else {
         throw new NotFoundException(
-          `BD Partner Organization Profile with ID ${bdPartnerOrganizationProfileId} not found`,
+          `BD Partner Profile with ID ${bdPartnerProfileId} not found`,
         );
       }
     }
@@ -110,7 +95,7 @@ export class EOIService {
         productId,
         bdPartnerIndividualProfileId,
         bdPartnerOrganizationProfileId,
-        initiator,
+        initiator: initiator || EOIInitiator.BD_PARTNER,
         message,
         expiresAt,
         status: EOIStatus.PENDING,

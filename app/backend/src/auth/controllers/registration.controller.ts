@@ -77,7 +77,7 @@ export class RegistrationController {
    * - linkedInURL?, resumeURL?, idProofURL?: URL strings
    * - ndaAgreed: boolean
    *
-   * Returns: Created BDPartnerIndividualProfile with related data
+   * Returns: Created bdpartnerIndividualProfile with related data
    *
    * @throws ConflictException if user already has an active profile
    * @throws BadRequestException if validation fails (FK doesn't exist, duplicate email, etc.)
